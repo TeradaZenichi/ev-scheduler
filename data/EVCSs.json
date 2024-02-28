@@ -1,0 +1,84 @@
+{
+    "EVCS1":{
+        "NAC": 1,
+        "NDC": 1,
+        "connector":{
+            "1": {
+                "type": "CCS",
+                "Pmaxc": 20,
+                "Pmaxd": 20,
+                "current": "DC",
+                "efficiency": 0.95
+            },
+            "2": {
+                "type": "CHAdeMO",
+                "Pmaxc": 20,
+                "Pmaxd": 20,
+                "current": "DC",
+                "efficiency": 0.95
+            },
+            "3": {
+                "type": "Type2",
+                "Pmaxc": 20,
+                "Pmaxd": 20,
+                "current": "AC",
+                "efficiency": 0.95
+            }
+        }
+    },
+    "EVCS2":{
+        "NAC": 1,
+        "NDC": 1,
+        "connector":{
+            "1": {
+                "type": "CCS",
+                "Pmaxc": 20,
+                "Pmaxd": 20,
+                "current": "DC",
+                "efficiency": 0.95
+            },
+            "2": {
+                "type": "CHAdeMO",
+                "Pmaxc": 20,
+                "Pmaxd": 20,
+                "current": "DC",
+                "efficiency": 0.95
+            },
+            "3": {
+                "type": "Type2",
+                "Pmaxc": 20,
+                "Pmaxd": 20,
+                "current": "AC",
+                "efficiency": 0.95
+            }
+
+        }
+    },
+    "EVCS3":{
+        "NAC": 1,
+        "NDC": 1,
+        "connector":{
+            "1": {
+                "type": "CCS",
+                "Pmaxc": 20,
+                "Pmaxd": 20,
+                "current": "DC",
+                "efficiency": 0.95
+            },
+            "2": {
+                "type": "CHAdeMO",
+                "Pmaxc": 20,
+                "Pmaxd": 20,
+                "current": "DC",
+                "efficiency": 0.95
+            },
+            "3": {
+                "type": "Type2",
+                "Pmaxc": 20,
+                "Pmaxd": 20,
+                "current": "AC",
+                "efficiency": 0.95
+            }
+        }
+    }
+}
