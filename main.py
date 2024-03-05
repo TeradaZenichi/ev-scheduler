@@ -35,6 +35,10 @@ with open('data/EVCSs.json') as file:
 Ωc = list()
 Ωt = list()
 
+Ωc_dc = dict()
+Ωc_ac = dict()
+
+
 t = datetime.strptime('00:00', "%H:%M")
 while t < datetime.strptime('23:59', "%H:%M"):
     Ωt.append(t.strftime("%H:%M"))
@@ -42,6 +46,10 @@ while t < datetime.strptime('23:59', "%H:%M"):
 
 # EVCSs definition
 for evcs in EVCS.keys():
+    dc = [connector for connector in EVCS[evcs]['connector'].keys() if EVCS[evcs]['connector'][connector]['current'] == 'DC']
+    ac = [connector for connector in EVCS[evcs]['connector'].keys() if EVCS[evcs]['connector'][connector]['current'] == 'AC']
+    Ωc_dc[evcs] = dc
+    Ωc_ac[evcs] = ac
     for connector in EVCS[evcs]['connector'].keys():
         Ωc.append((evcs, connector))
 
@@ -221,6 +229,20 @@ def EVdischargingdeparture(model, t, s, e):
         return pyo.Constraint.Skip
 model.EVdischargingdeparture = pyo.Constraint(Ωt, Ωs, Ωe, rule=EVdischargingdeparture)
 
+def αDCconstraint(model, t, s, evcs):
+    return sum(model.αEV[t, s, e, evcs, connector] for e in Ωe for connector in Ωc_dc[evcs]) <= EVCS[evcs]['NDC']
+model.αDCconstraint = pyo.Constraint(Ωt, Ωs, Ωc_dc.keys(), rule=αDCconstraint)
+
+def αACconstraint(model, t, s, evcs):
+    return sum(model.αEV[t, s, e, evcs, connector] for e in Ωe for connector in Ωc_ac[evcs]) <= EVCS[evcs]['NAC']
+model.αACconstraint = pyo.Constraint(Ωt, Ωs, Ωc_ac.keys(), rule=αACconstraint)
+
+def EVconnectorconstraint(model, t, s, e, evcs, connector):
+    if EVCS[evcs]['connector'][connector]['type'] != EV[e]['Connector']:
+        return model.αEV[t, s, e, evcs, connector] == 0
+    else:
+        return pyo.Constraint.Skip
+model.EVconnectorconstraint = pyo.Constraint(Ωt, Ωs, Ωe, Ωc, rule=EVconnectorconstraint)
 
 results = SolverFactory('gurobi').solve(model)
 
@@ -291,6 +313,8 @@ for s in Ωs:
                     idev = int(e)
                     idsoc = int(100 * pyo.value(model.SoCEV[t, s, e]))
                     annotation = f'{idev}\n{idsoc}%'  # Atualiza a anotação com valores reais
+            if idev == 0:
+                annotation = f'\n'  # Atualiza a anotação com valores reais
 
             values.append(idev)  # Adiciona o valor de idev para a coloração
             annotations.append(annotation)  # Adiciona a string formatada para anotações
