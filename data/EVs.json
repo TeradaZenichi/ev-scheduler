@@ -85,7 +85,7 @@
     },
     "13": {
         "arrival": "16:00",
-        "departure": "20:00",
+        "departure": "23:50",
         "SoCini": 0.7,
         "Emax": 40,
         "Connector": "CHAdeMO"

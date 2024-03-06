@@ -1,9 +1,9 @@
 {
     "model name": "model 1",
-    "timestep": 30,
+    "timestep": 15,
     "cost": {
         "EVc": 1,
-        "EVd": 0.9
+        "EVd": 1.2
     },
     "EDS": {
         "Pmax": 60,
