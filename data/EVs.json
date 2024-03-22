@@ -15,129 +15,128 @@
     },
     "3": {
         "arrival": "06:00",
+        "departure": "07:00",
+        "SoCini": 0.1,
+        "Emax": 40,
+        "Connector": "Type2"
+    },
+    "4": {
+        "arrival": "06:00",
+        "departure": "07:00",
+        "SoCini": 0.1,
+        "Emax": 40,
+        "Connector": "CCS"
+    },
+    "5": {
+        "arrival": "06:00",
         "departure": "10:00",
         "SoCini": 0.5,
         "Emax": 40,
         "Connector": "CHAdeMO"
     },
-    "4": {
+    "6": {
         "arrival": "07:00",
         "departure": "11:00",
         "SoCini": 0.4,
         "Emax": 40,
         "Connector": "Type2"
     },
-    "5": {
+    "7": {
         "arrival": "08:00",
         "departure": "12:00",
         "SoCini": 0.4,
         "Emax": 40,
         "Connector": "Type2"
     },
-    "6": {
+    "8": {
         "arrival": "09:00",
         "departure": "13:00",
         "SoCini": 0.4,
         "Emax": 40,
         "Connector": "CCS"
     },
-    "7": {
+    "9": {
         "arrival": "10:00",
         "departure": "14:00",
         "SoCini": 0.8,
         "Emax": 40,
         "Connector": "CHAdeMO"
     },
-    "8": {
+    "10": {
         "arrival": "11:00",
         "departure": "15:00",
         "SoCini": 0.2,
         "Emax": 40,
         "Connector": "Type2"
     },
-    "9": {
+    "11": {
         "arrival": "12:00",
         "departure": "16:00",
         "SoCini": 0.3,
         "Emax": 40,
         "Connector": "CCS"
     },
-    "10": {
+    "12": {
         "arrival": "13:00",
         "departure": "17:00",
         "SoCini": 0.4,
         "Emax": 40,
         "Connector": "CHAdeMO"
     },
-    "11": {
+    "13": {
         "arrival": "14:00",
         "departure": "18:00",
         "SoCini": 0.5,
         "Emax": 40,
         "Connector": "Type2"
     },
-    "12": {
+    "14": {
         "arrival": "15:00",
         "departure": "19:00",
         "SoCini": 0.6,
         "Emax": 40,
         "Connector": "CCS"
     },
-    "13": {
+    "15": {
         "arrival": "16:00",
         "departure": "20:00",
         "SoCini": 0.8,
         "Emax": 40,
         "Connector": "Type2"
     },    
-    "14": {
+    "16": {
         "arrival": "17:00",
         "departure": "23:45",
         "SoCini": 0.7,
         "Emax": 40,
         "Connector": "CHAdeMO"
     },
-    "15": {
+    "17": {
         "arrival": "18:00",
         "departure": "22:00",
         "SoCini": 0.9,
         "Emax": 40,
         "Connector": "CCS"
     },
-    "16": {
+    "18": {
         "arrival": "19:00",
         "departure": "23:00",
         "SoCini": 0.4,
         "Emax": 40,
         "Connector": "CHAdeMO"
     },
-    "17": {
+    "19": {
         "arrival": "20:00",
         "departure": "23:00",
         "SoCini": 0.3,
         "Emax": 40,
         "Connector": "Type2"
     },
-    "18": {
+    "20": {
         "arrival": "20:30",
         "departure": "23:30",
         "SoCini": 0.4,
         "Emax": 40,
         "Connector": "CCS"
-    },
-    "19": {
-        "arrival": "06:00",
-        "departure": "07:00",
-        "SoCini": 0.1,
-        "Emax": 40,
-        "Connector": "Type2"
-    },
-    "20": {
-        "arrival": "06:00",
-        "departure": "07:00",
-        "SoCini": 0.1,
-        "Emax": 40,
-        "Connector": "CCS"
     }
-
 }

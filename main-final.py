@@ -282,7 +282,7 @@ for s in Ωs:
     plt.bar(Ωt, [pyo.value(model.Pbess_c[t, s]) - pyo.value(model.Pbess_d[t, s] ) for t in Ωt], label='BESS', color='green', alpha=0.5)
     plt.ylabel('Power [kW]')
     plt.xlabel('Timestamp')
-    plt.ylim(-40, 80)
+    plt.ylim(-40, 100)
     plt.xticks(Ωt[::int(len(Ωt)/12)], rotation=90)  # Set x-axis ticks at every nth element of Ωt with rotation
     plt.grid(True, alpha=0.3)
     plt.legend(loc='upper right', ncol = 3,fontsize='small')
