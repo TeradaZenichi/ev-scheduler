@@ -230,17 +230,11 @@ def EVdischargingdeparture(model, t, s, e):
 model.EVdischargingdeparture = pyo.Constraint(Ωt, Ωs, Ωe, rule=EVdischargingdeparture)
 
 def αDCconstraint(model, t, s, evcs):
-    if len(Ωc_dc[evcs]) > 1:
-        return sum(model.αEV[t, s, e, evcs, connector] for e in Ωe for connector in Ωc_dc[evcs]) <= EVCS[evcs]['NDC']
-    else:
-        return pyo.Constraint.Skip
+    return sum(model.αEV[t, s, e, evcs, connector] for e in Ωe for connector in Ωc_dc[evcs]) <= EVCS[evcs]['NDC']
 model.αDCconstraint = pyo.Constraint(Ωt, Ωs, Ωc_dc.keys(), rule=αDCconstraint)
 
 def αACconstraint(model, t, s, evcs):
-    if len(Ωc_ac[evcs]) > 1:    
-        return sum(model.αEV[t, s, e, evcs, connector] for e in Ωe for connector in Ωc_ac[evcs]) <= EVCS[evcs]['NAC']
-    else:
-        return pyo.Constraint.Skip        
+    return sum(model.αEV[t, s, e, evcs, connector] for e in Ωe for connector in Ωc_ac[evcs]) <= EVCS[evcs]['NAC']
 model.αACconstraint = pyo.Constraint(Ωt, Ωs, Ωc_ac.keys(), rule=αACconstraint)
 
 def EVconnectorconstraint(model, t, s, e, evcs, connector):
@@ -270,26 +264,21 @@ plt.rcParams['axes.unicode_minus'] = False
 
 
 
-
 for s in Ωs:
-
     plt.figure()
-    plt.plot(Ωt, [pyo.value(model.Peds[t, s]) for t in Ωt], label='EDS', color='red')
+    plt.plot(Ωt, [pyo.value(model.Peds[t, s]) for t in Ωt], label='EDS', color='blue')
+    plt.bar(Ωt, [pyo.value(model.Pbess_c[t, s]) - pyo.value(model.Pbess_d[t, s] ) for t in Ωt], label='BESS', color='green', alpha=0.5)
     plt.plot(Ωt, [-data['PV']['Pmax'] * fs[s]['pv'][t] for t in Ωt], label='PV', color='orange')
     plt.plot(Ωt, [data['load']['Pmax'] * fs[s]['load'][t] for t in Ωt], label='Load', color='black', marker='o', linestyle='dashed', markersize=3)
-    plt.bar(Ωt, [pyo.value(sum(model.Pαc[t, s, e, evcs, connector] - model.Pαd[t, s, e, evcs, connector] for e in Ωe for evcs, connector in Ωc if evcs != "EVCS4")) for t in Ωt], label='EVCSS (123)', color='#00c8ff', alpha=0.5)
-    plt.bar(Ωt, [pyo.value(sum(model.Pαc[t, s, e, evcs, connector] - model.Pαd[t, s, e, evcs, connector] for e in Ωe for evcs, connector in Ωc if evcs == "EVCS4")) for t in Ωt], label='V2G', color='purple', alpha=0.5)
-    plt.bar(Ωt, [pyo.value(model.Pbess_c[t, s]) - pyo.value(model.Pbess_d[t, s] ) for t in Ωt], label='BESS', color='green', alpha=0.5)
+    plt.plot(Ωt, [pyo.value(sum(model.Pαc[t, s, e, c] - model.Pαd[t, s, e, c] for e in Ωe for c in Ωc)) for t in Ωt], label='EVCSs', color='red')
+    # for evcs, connector in Ωc:
+    #     plt.plot(Ωt, [pyo.value(sum(model.Pαc[t, s, e, evcs, connector] - model.Pαd[t, s, e, evcs, connector] for e in Ωe)) for t in Ωt], label=f'{evcs}{connector}', linestyle='dashed')
     plt.ylabel('Power [kW]')
     plt.xlabel('Timestamp')
-    plt.ylim(-40, 100)
-    plt.xticks(Ωt[::int(len(Ωt)/12)], rotation=90)  # Set x-axis ticks at every nth element of Ωt with rotation
-    plt.grid(True, alpha=0.3)
-    plt.legend(loc='upper right', ncol = 3,fontsize='small')
+    plt.xticks(Ωt[::int(len(Ωt)/6)])  # Set x-axis ticks at every 4th element of Ωt
+    plt.legend(loc='upper right')
     plt.savefig(f'Results/Operation_{s}.png', dpi=300, bbox_inches='tight')
-    plt.savefig(f'Results/Operation_{s}.pdf', dpi=300, bbox_inches='tight')
     plt.close('All')
-
 
 for s in Ωs:
     plt.figure()
@@ -301,8 +290,8 @@ for s in Ωs:
     plt.xticks(Ωt[::int(len(Ωt)/6)])  # Set x-axis ticks at every 4th element of Ωt
     plt.legend(loc='upper right')
     plt.savefig(f'Results/SoC_{s}.png', dpi=300, bbox_inches='tight')
-    plt.savefig(f'Results/SoC_{s}.pdf', dpi=300, bbox_inches='tight')
     plt.close('All')
+
 
 for s in Ωs:
     dic_values = {}  # Para os valores numéricos (idev)
@@ -350,7 +339,6 @@ for s in Ωs:
     plt.xlabel('Timestamp')
     plt.ylabel('EVCSs')
     plt.savefig(f'Results/EVCS-s{s}.png', dpi=300, bbox_inches='tight')
-    plt.savefig(f'Results/EVCS-s{s}.pdf', dpi=300, bbox_inches='tight')    
     plt.close('All')
 
 
