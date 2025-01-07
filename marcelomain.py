@@ -43,16 +43,6 @@ while t < datetime.strptime('23:59', "%H:%M"):
 # Definindo o modelo
 model = ConcreteModel()
 
-# Número de intervalos de tempo (24 horas)
-
-# Parâmetros de entrada
-# precos = np.random.uniform(10, 15, size=T)  # Preço aleatório por kWh
-# demanda = np.random.uniform(20, 40, size=T)  # Demanda aleatória por hora (em kWh)
-# geracao_solar = np.random.uniform(0, 1, size=T)  # Geração solar aleatória entre 0 e 1 kWh por hora
-# irradiancia_solar = np.random.uniform(0, 1, size=T)  # Irradiância solar (0 a 1) em cada hora
-# vento = np.random.uniform(0, 1, size=T)  # Velocidade do vento (0 a 1) em cada hora
-
-
 
 # Variable definition
 model.PS = Var(Ωt, domain=NonNegativeReals)  # Energia comprada da rede
@@ -89,21 +79,6 @@ model.capex_constraint = Constraint(rule=capex_constraint_rule)
 def opex_constraint_rule(model):
     return model.OPEX == sum(cost[t] * model.PS[t] for t in Ωt)
 model.opex_constraint = Constraint(rule=opex_constraint_rule)
-
-
-
-
-
-
-# Dados dos veículos (com SoCini e Emax)
-dados_veiculos = {
-    "1": {
-        "arrival": 20,  # Hora de chegada (22h)
-        "departure": 6,  # Hora de saída (03h)
-        "SoCini": 0.3,  # Estado de carga inicial (30%)
-        "Emax": 40,     # Capacidade máxima do EV em kWh
-    }
-}
 
 
 def alpha_ev_update(model, ev, t):
