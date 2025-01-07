@@ -1,0 +1,25 @@
+{
+    "CAPEX":{
+        "PV": 50,
+        "WD": 60,
+        "EV": 70,
+        "BESS": 80
+    },
+    "OPEX":{
+        "rate": 0.1,
+        "years": 30
+    },
+    "O&M":{
+        "PV": 1,
+        "WD": 2,
+        "EV": 3,
+        "BESS": 4
+    },
+    "EDS":{
+        "Pmax": 50,
+        "Pmin": -10,
+        "LOAD": 15
+    },
+    "timestep": 60,
+    "scenarios": ["5"]
+}

@@ -1,90 +1,99 @@
 import plotly.graph_objects as go
-from pyomo.environ import ConcreteModel, Var, Objective, Constraint, NonNegativeReals, SolverFactory
-import numpy as np
+from pyomo.environ import ConcreteModel, Var, Objective, Constraint, NonNegativeReals, SolverFactory, Binary
 import pyomo.environ as pyo
-
-from pyomo.opt import SolverFactory, SolverStatus, TerminationCondition
 from datetime import datetime, timedelta
-import matplotlib.pyplot as plt
-
 import matplotlib as mpl    
 import seaborn as sns
 import pandas as pd
-
+import numpy as np
 import json
 import os
+
+folder = "Marcelo_Data"
+
+
+# Load the JSON file
+with open(f'{folder}/cost.json') as file:
+    cost = json.load(file)
+
+with open(f'{folder}/scenarios.json') as file:
+    fs = json.load(file)
+
+with open(f'{folder}/parameters.json') as file:
+    data = json.load(file)
+    
+with open(f'{folder}/EVs.json') as file:
+    EV = json.load(file)
+
+# timestep
+Δt = data['timestep']
+
+# Set definition
+Ωev = EV.keys()
+Ωs  = data['scenarios']
+Ωt  = []
+
+
+t = datetime.strptime('00:00', "%H:%M")
+while t < datetime.strptime('23:59', "%H:%M"):
+    Ωt.append(t.strftime("%H:%M"))
+    t += timedelta(minutes=Δt)
 
 
 # Definindo o modelo
 model = ConcreteModel()
 
 # Número de intervalos de tempo (24 horas)
-T = 24
 
 # Parâmetros de entrada
-precos = np.random.uniform(10, 15, size=T)  # Preço aleatório por kWh
-demanda = np.random.uniform(20, 40, size=T)  # Demanda aleatória por hora (em kWh)
-geracao_solar = np.random.uniform(0, 1, size=T)  # Geração solar aleatória entre 0 e 1 kWh por hora
-irradiancia_solar = np.random.uniform(0, 1, size=T)  # Irradiância solar (0 a 1) em cada hora
-vento = np.random.uniform(0, 1, size=T)  # Velocidade do vento (0 a 1) em cada hora
+# precos = np.random.uniform(10, 15, size=T)  # Preço aleatório por kWh
+# demanda = np.random.uniform(20, 40, size=T)  # Demanda aleatória por hora (em kWh)
+# geracao_solar = np.random.uniform(0, 1, size=T)  # Geração solar aleatória entre 0 e 1 kWh por hora
+# irradiancia_solar = np.random.uniform(0, 1, size=T)  # Irradiância solar (0 a 1) em cada hora
+# vento = np.random.uniform(0, 1, size=T)  # Velocidade do vento (0 a 1) em cada hora
 
 
 
-# Definindo as variáveis no modelo
-model.SoCEV = Var(range(T), domain=NonNegativeReals, initialize=0)  # Estado de Carga do EV
-model.PS = Var(range(T), domain=NonNegativeReals, initialize=0)    # Energia comprada da rede
-model.PEV = Var(range(T), domain=NonNegativeReals, initialize=0)   # Energia fornecida pelo EV
-model.PPVmax = Var(domain=NonNegativeReals, initialize=10)        # Capacidade máxima de geração solar (exemplo 10 kW)
-model.PWTmax = Var(domain=NonNegativeReals, initialize=10)        # Capacidade máxima de geração eólica (exemplo 10 kW)
+# Variable definition
+model.PS = Var(Ωt, domain=NonNegativeReals)  # Energia comprada da rede
+
+# EV operation variables
+model.SoCEV = Var(Ωev, Ωt, domain=NonNegativeReals)  # EV State of Charge
+model.PEV_c = Var(Ωev, Ωt, domain=NonNegativeReals)  # EV charging power
+# model.PEV_d = Var(Ωev, Ωt, domain=NonNegativeReals)  # EV discharging power
+model.αEV   = Var(Ωev, Ωt, domain=Binary)  # EV charging factor
+
+# PV variable
+model.PPVmax = Var(domain=NonNegativeReals)          # Maximum PV generation
 
 
-# Constantes
-cPV = 50  # Custo fixo por unidade de capacidade instalada (em $/kW, por exemplo)
-cWT = 60  # Custo fixo por unidade de capacidade instalada para eólica
-
-# Variables
+# Economic variables
 model.CAPEX = Var(within=NonNegativeReals)  # Total CAPEX
 model.OPEX = Var(within=NonNegativeReals)  # Total OPEX
 
-
-# Calculando CAPEX e OPEX
+#Objective function
+def objective_rule(model):
+    total_opex = 0
+    for n in range(1, data["OPEX"]["years"] + 1):
+        total_opex += model.OPEX * 365 *( (1 + data["OPEX"]["rate"]) ** (n - 1))
+    return model.CAPEX + total_opex
+model.objective = Objective(rule=objective_rule, sense=pyo.minimize)
 
 # CAPEX constraint (ensuring CAPEX is the sum of InstPV and InstWT)
-def capex_constraint(model):
-    custo_PV = model.PPVmax*cPV
-    custo_WT = model.PWTmax*cWT
-    return model.CAPEX == custo_PV + custo_WT
-
-model.capex_constraint = Constraint(rule=capex_constraint)
+def capex_constraint_rule(model):
+    PV = model.PPVmax * data["CAPEX"]['PV']  # PV installation cost
+    return model.CAPEX == PV
+model.capex_constraint = Constraint(rule=capex_constraint_rule)
 
 # OPEX constraint (sum of prices * PS for each time period t)
-def opex_constraint(model):
-    return model.OPEX == sum(precos[t] * model.PS[t] for t in range(T))
+def opex_constraint_rule(model):
+    return model.OPEX == sum(cost[t] * model.PS[t] for t in Ωt)
+model.opex_constraint = Constraint(rule=opex_constraint_rule)
 
-model.opex_constraint = Constraint(rule=opex_constraint)
 
 
-# Taxa de inflação (r_rate)
-r_rate = 0.05  # 5% de inflação anual
-n_years = 30  # Número de anos
-# O cálculo de OPEX ajustado por inflação para cada ano
-def custo_opex_com_inflacao(model): 
-    custo_total_com_inflacao = 0
 
-    # Somando os custos de OPEX ajustados pela inflação para cada ano
-    for n in range(1, n_years + 1):
-        OPEX_ano = model.OPEX*365 *( (1 + r_rate) ** (n - 1))  # Ajustando pela inflação para o ano n
-        custo_total_com_inflacao += OPEX_ano  # Adicionando o OPEX do ano n ao total
-    
-    return custo_total_com_inflacao
 
-# Definindo a função objetivo: Minimizar o custo de compra de energia da rede + custos de instalação
-def custo_total(model):
-    OPEX_inflacionado = custo_opex_com_inflacao(model)  # Calculando OPEX com inflação
-    return model.CAPEX + OPEX_inflacionado
-
-model.objective = Objective(rule=custo_total, sense=pyo.minimize)
-# Restrições
 
 # Dados dos veículos (com SoCini e Emax)
 dados_veiculos = {
@@ -96,63 +105,61 @@ dados_veiculos = {
     }
 }
 
-# Load the JSON file
-with open('data/cost.json') as file:
-    cost = json.load(file)
 
-with open('data/scenarios.json') as file:
-    fs = json.load(file)
-
-with open('data/parameters.json') as file:
-    data = json.load(file)
+def alpha_ev_update(model, ev, t):
+    ta = datetime.strptime(EV[ev]['arrival'], "%H:%M") 
+    td = datetime.strptime(EV[ev]['departure'], "%H:%M")
+    t0 = datetime.strptime(t, "%H:%M")
     
-with open('data/EVs.json') as file:
-    EV = json.load(file)
-
-with open('data/EVCSs.json') as file:
-    EVCS = json.load(file)
-
-def socev_update(model, t):
-    if t > 6 and t < 20:
-        return model.SoCEV[t] == 0
-    if t == dados_veiculos["1"]["arrival"]:
-        return model.SoCEV[t] == dados_veiculos["1"]["SoCini"] * dados_veiculos["1"]["Emax"]
-    elif t != 0:
-        return model.SoCEV[t] == model.SoCEV[t-1] + model.PEV[t-1]  # SoCEV(t) = SoCEV(t-1) + PEV(t-1)
-    
-model.socev_update = Constraint(range(1, T), rule=socev_update)
-
-def PEV_zero(model, t):
-    if t > 6 and t < 20:
-        return model.PEV[t] == 0
+    if ta < td and t0 > ta and t0 <= td:
+        return model.αEV[ev, t] <= 1
+    elif ta > td and not (t0 > td and t0 <= ta):
+        return model.αEV[ev, t] <= 1
+    elif t0 == ta:
+        return model.αEV[ev, t] <= 1
     else:
-        Constraint.Skip()
+        return model.αEV[ev, t] <= 0
+model.alpha_ev_update = Constraint(Ωev ,Ωt, rule=alpha_ev_update)
 
+def ev_power_rule(model, ev, t):
+    return model.PEV_c[ev, t] <= model.αEV[ev, t] * EV[ev]['Emax']
+model.ev_power = Constraint(Ωev, Ωt, rule=ev_power_rule)
+
+def socev_update(model, ev, t):
+    ta = datetime.strptime(EV[ev]['arrival'], "%H:%M") 
+    td = datetime.strptime(EV[ev]['departure'], "%H:%M")
+    t0 = datetime.strptime(t, "%H:%M")
+
+    t2 = datetime.strptime(t, "%H:%M").strftime("%H:%M")
+    t1 = (datetime.strptime(t, "%H:%M") - timedelta(minutes=Δt)).strftime("%H:%M")
     
-model.PEV_zero = Constraint(range(7, 19), rule=PEV_zero)
+    if ta < td and t0 > ta and t0 <= td:
+        return model.SoCEV[ev, t2] == model.SoCEV[ev, t1] + model.PEV_c[ev, t2] * (Δt/60)
+    elif ta > td and not (t0 > td and t0 <= ta):
+        return model.SoCEV[ev, t2] == model.SoCEV[ev, t1] + model.PEV_c[ev, t2] * (Δt/60)
+    elif t0 == ta:
+        return model.SoCEV[ev, t] == EV[ev]['SoCini'] * EV[ev]['Emax']
+    else:
+        return model.SoCEV[ev, t] == 0
+model.socev_update = Constraint(Ωev ,Ωt, rule=socev_update)
 
-def carga_completa(model):
-    return model.SoCEV[dados_veiculos["1"]["departure"]] == dados_veiculos["1"]["Emax"]
+def EV_departure_rule(model, ev):
+    return model.SoCEV[ev, EV[ev]['departure']] == EV[ev]['Emax']
+model.EV_departure = Constraint(Ωev, rule=EV_departure_rule)
 
-model.carga_completa = Constraint(rule=carga_completa)
+
 
 def limite_energia(model, t):
-    return model.PS[t] <= 50  # Exemplo: Capacidade máxima de 10 kWh por hora
+    return model.PS[t] <= data["EDS"]["Pmax"]  # Exemplo: Capacidade máxima de 10 kWh por hora
+model.limite_energia = Constraint(Ωt, rule=limite_energia)
 
-model.limite_energia = Constraint(range(T), rule=limite_energia)
-
-def socev_midnight(model):
-    return model.SoCEV[0] == model.SoCEV[(T-1)] + model.PEV[(T-1)]
-
-model.socev_midnight = Constraint(rule=socev_midnight)
 
 # Balanço de carga: PS = PEV + Demanda - PV*Irradiância - PWT*Vento
 def balanco_carga(model, t):
-    PV_gerado = model.PPVmax * irradiancia_solar[t]  # Geração fotovoltaica
-    WT_gerado = model.PWTmax * vento[t]  # Geração eólica   
-    return model.PS[t] + PV_gerado + WT_gerado == model.PEV[t] + demanda[t] 
-
-model.balanco_carga = Constraint(range(T), rule=balanco_carga)
+    pv = model.PPVmax * fs['5']['pv'][t]  # Geração fotovoltaica
+    load = data["EDS"]["LOAD"] * fs['5']['load'][t]  # Demanda
+    return model.PS[t] + pv == sum(model.PEV_c[ev, t] for ev in Ωev) + load
+model.balanco_carga = Constraint(Ωt, rule=balanco_carga)
 
 
 
