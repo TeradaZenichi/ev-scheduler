@@ -144,14 +144,21 @@ results = SolverFactory('gurobi').solve(model)
 # Exibindo os resultados
 print("Resultados de Otimização:")
 
+# Check solver status
 if results.solver.status == pyo.SolverStatus.ok:
-    print(f"Custo Total de Energia: {pyo.value(model.objective):.2f} unidades")
-    print(f"Capacidade Máxima de Geração Solar (PPVmax): {model.PPVmax.value:.2f} kW")
-    print(f"Capacidade Máxima de Geração Eólica (PWTmax): {model.PWTmax.value:.2f} kW")
-    for t in range(T):
-        print(f"Hora {t}: SoC = {model.SoCEV[t].value:.2f} kWh, Energia Comprada = {model.PS[t].value:.2f} kWh, Energia Fornecida = {model.PEV[t].value:.2f} kWh")
+    # Display results
+    print(f"Total Energy Cost: {pyo.value(model.objective):.2f} units")
+    print(f"Maximum Solar Generation Capacity (PPVmax): {model.PPVmax.value:.2f} kW")
+    
+    # Number of time periods (using Ωt to determine the range)
+    T = len(Ωt)  # Define T as the length of Ωt, which is the number of time steps
+    e = len(Ωev)
+    #for ev in range(e):
+        #for t in range(T):
+            #print(f"Hour {t}: EV {ev} SoC = {model.SoCEV[ev, t].value:.2f} kWh, Energy Bought = {model.PS[t].value:.2f} kWh, Energy Supplied = {model.PEV_c[ev, t].value:.2f} kWh")
 else:
-    print("Solução não encontrada")
+    print("Solution not found")
+
 
 
 # Exibindo os resultados de CAPEX e OPEX
@@ -160,51 +167,42 @@ else:
 #print(f"OPEX (Custo Operacional Anual): {OPEX_anual:.2f} unidades")
 
 # Resultados do modelo de otimização (valores de SoC, PS, PEV, InstPV e InstWT de cada hora)
-horas = list(range(T))  # Horas de 0 a 23
 
-# Extraindo os valores de SoC, PS, PEV, InstPV, InstWT do modelo
-SoC_values = [model.SoCEV[t].value for t in range(T)]
-PS_values = [model.PS[t].value for t in range(T)]
-PEV_values = [model.PEV[t].value for t in range(T)]
-
-
-# Calculando a geração solar e eólica para cada hora
-PV_gerado = [model.PPVmax.value * irradiancia_solar[t] for t in range(T)]  # Geração fotovoltaica
-WT_gerado = [model.PWTmax.value * vento[t] for t in range(T)]  # Geração eólica
-
-# Criando gráficos com Plotly
+# Creating graphs with Plotly
 fig = go.Figure()
 
-# Gráfico de SoC
-fig.add_trace(go.Scatter(x=horas, y=SoC_values, mode='lines+markers', name='SoC (kWh)', line=dict(color='blue')))
+# SoC graph (State of Charge)
+SoC_values = [model.SoCEV[ev, t].value for ev in Ωev for t in Ωt]  # Extract SoC for each EV and each time
+fig.add_trace(go.Scatter(x=[f"{ev}-{t}" for ev in Ωev for t in Ωt], y=SoC_values, mode='lines+markers', name='SoC (kWh)', line=dict(color='blue')))
 
-# Gráfico de PS (Energia Comprada)
-fig.add_trace(go.Scatter(x=horas, y=PS_values, mode='lines+markers', name='Energia Comprada (PS) (kWh)', line=dict(color='red')))
+# PS graph (Energy Bought)
+PS_values = [model.PS[t].value for t in Ωt]  # Extract energy bought for each time step
+fig.add_trace(go.Scatter(x=Ωt, y=PS_values, mode='lines+markers', name='Energy Bought (PS) (kWh)', line=dict(color='red')))
 
-# Gráfico de PEV (Energia Fornecida pelo EV)
-fig.add_trace(go.Scatter(x=horas, y=PEV_values, mode='lines+markers', name='Energia Fornecida (PEV) (kWh)', line=dict(color='green')))
+# PEV graph (Energy Supplied by EV)
+PEV_values = [model.PEV_c[ev, t].value for ev in Ωev for t in Ωt]  # Extract energy supplied by EV for each EV and each time
+fig.add_trace(go.Scatter(x=[f"{ev}-{t}" for ev in Ωev for t in Ωt], y=PEV_values, mode='lines+markers', name='Energy Supplied (PEV) (kWh)', line=dict(color='green')))
 
-# Gráfico de Geração Solar
-fig.add_trace(go.Scatter(x=horas, y=PV_gerado, mode='lines+markers', name='Geração Solar (kWh)', line=dict(color='orange')))
+# Solar Generation graph
+PV_generated = [model.PPVmax.value * fs['5']['pv'][t] for t in Ωt]  # Extract solar generation for each time step
+fig.add_trace(go.Scatter(x=Ωt, y=PV_generated, mode='lines+markers', name='Solar Generation (kWh)', line=dict(color='orange')))
 
-# Gráfico de Geração Eólica
-fig.add_trace(go.Scatter(x=horas, y=WT_gerado, mode='lines+markers', name='Geração Eólica (kWh)', line=dict(color='purple')))
-
-# Add trace for demanda
-fig.add_trace(go.Scatter(x=horas, y=[demanda[t] for t in horas], mode='lines+markers', name='Demanda (kWh)', line=dict(color='black', dash='dot')))
+# Add trace for demand
+demand_values = [data["EDS"]["LOAD"] * fs['5']['load'][t] for t in Ωt]  # Extract demand for each time step
+fig.add_trace(go.Scatter(x=Ωt, y=demand_values, mode='lines+markers', name='Demand (kWh)', line=dict(color='black', dash='dot')))
 
 
-# Configuração do layout
+# Layout configuration
 fig.update_layout(
-    title="Estado de Carga (SoC), Energia Comprada (PS), Energia Fornecida (PEV), Geração Solar e Geração Eólica ao Longo das Horas",
-    xaxis_title="Hora do Dia",
-    yaxis_title="Valor (kWh)",
-    legend_title="Variáveis",
+    title="State of Charge (SoC), Energy Bought (PS), Energy Supplied (PEV), Solar and Wind Generation Over Hours",
+    xaxis_title="Time of Day",
+    yaxis_title="Value (kWh)",
+    legend_title="Variables",
     template="plotly",
     showlegend=True
 )
 
-# Exibindo o gráfico
+# Displaying the graph
 fig.show()
-# Verificando os preços para cada hora
+
 
