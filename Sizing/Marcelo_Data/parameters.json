@@ -3,7 +3,9 @@
         "PV": 50,
         "WD": 60,
         "EV": 70,
-        "BESS": 80
+        "BESS": 80,
+        "EVCS": 90,
+        "TG": 30
     },
     "OPEX":{
         "rate": 0.1,
@@ -19,6 +21,14 @@
         "Pmax": 500,
         "Pmin": -10,
         "LOAD": 15
+    },
+    "BESS":{
+        "eff": 0.95,
+        "crate": 0.5,
+        "SoCini": 0.5
+    },
+    "TG":{
+        "cost": 0.8
     },
     "timestep": 15,
     "scenarios": ["5"]

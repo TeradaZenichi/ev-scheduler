@@ -210,7 +210,13 @@ if results.solver.status == pyo.SolverStatus.ok:
 else:
     print("Solution not found")
 
-
+counter = 0
+for ev in Ωev:
+    for t in Ωt:
+        if model.PEV_c[ev, t].value > 0 and model.PEV_d[ev, t].value > 0:
+            print(f"Erro: EV {ev} está carregando e descarregando ao mesmo tempo as {t}")
+            counter += 1
+print(f"Total de {counter} erros")
 
 # Exibindo os resultados de CAPEX e OPEX
 #print(f"CAPEX (Custo de Instalação Total): {CAPEX:.2f} unidades")
