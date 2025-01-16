@@ -47,9 +47,9 @@ model = ConcreteModel()
 
 
 # Variable definition
-model.PS = Var(Ωt, domain=Reals)  # Energia da rede
+model.PS = Var(Ωt, domain=Reals, bounds=(data["EDS"]['Pmin'], data["EDS"]['Pmax']))  # Energia da rede
 model.PSp = Var(Ωt, domain=NonNegativeReals)  # Energia comprada da rede
-model.PSn = Var(Ωt, domain=NonNegativeReals, bounds=(0, -data["EDS"]['Pmin']))  # Adding explicit upper bound
+model.PSn = Var(Ωt, domain=NonNegativeReals)  # Adding explicit upper bound
 
 
     
@@ -67,6 +67,8 @@ model.PPVmax = Var(domain=NonNegativeReals)          # Maximum PV generation
 # Economic variables
 model.CAPEX = Var(within=NonNegativeReals)  # Total CAPEX
 model.OPEX = Var(within=NonNegativeReals)  # Total OPEX
+
+
 
 #Objective function
 def objective_rule(model):
@@ -129,11 +131,11 @@ def socev_update(model, ev, t):
 
     t2 = datetime.strptime(t, "%H:%M").strftime("%H:%M")
     t1 = (datetime.strptime(t, "%H:%M") - timedelta(minutes=Δt)).strftime("%H:%M")
-
+    η = EV[ev]['eff']   
     if ta < td and t0 > ta and t0 <= td:
-        return model.SoCEV[ev, t2] == model.SoCEV[ev, t1] + model.PEV_c[ev, t2] * (Δt / 60) - model.PEV_d[ev, t2] * (Δt / 60)
+        return model.SoCEV[ev, t2] == model.SoCEV[ev, t1] + η * model.PEV_c[ev, t2] * (Δt / 60) - model.PEV_d[ev, t2] * (η * Δt / 60) 
     elif ta > td and not (t0 > td and t0 <= ta):
-        return model.SoCEV[ev, t2] == model.SoCEV[ev, t1] + model.PEV_c[ev, t2] * (Δt / 60) - model.PEV_d[ev, t2] * (Δt / 60)
+        return model.SoCEV[ev, t2] == model.SoCEV[ev, t1] + η * model.PEV_c[ev, t2] * (Δt / 60) - model.PEV_d[ev, t2] * (η * Δt / 60)
     elif t0 == ta:
         return model.SoCEV[ev, t] == EV[ev]['SoCini'] * EV[ev]['Emax']
     else:
@@ -147,23 +149,25 @@ model.socev_update = Constraint(Ωev, Ωt, rule=socev_update)
 def v2g_constraints(model, ev, t):
     t2 = datetime.strptime(t, "%H:%M").strftime("%H:%M")
     t1 = (datetime.strptime(t, "%H:%M") - timedelta(minutes=Δt)).strftime("%H:%M")   
+    η = EV[ev]['eff']
     
-    return model.PEV_c[ev, t2] <= (EV[ev]['Emax'] - model.SoCEV[ev, t1])  / (Δt / 60) 
+    return model.PEV_c[ev, t2] <= (EV[ev]['Emax'] - model.SoCEV[ev, t1])  / (η * Δt / 60) 
 
 model.v2g_charge = Constraint(Ωev, Ωt, rule=v2g_constraints)
 
 def v2g_discharge_constraints(model, ev, t):
     t2 = datetime.strptime(t, "%H:%M").strftime("%H:%M")
     t1 = (datetime.strptime(t, "%H:%M") - timedelta(minutes=Δt)).strftime("%H:%M")
-    
-    return model.PEV_d[ev, t2] <= model.SoCEV[ev, t1]  / (Δt / 60)
+    η = EV[ev]['eff']
+
+    return model.PEV_d[ev, t2] <= (model.SoCEV[ev, t1] * η) / (Δt / 60)
 
 model.v2g_discharge = Constraint(Ωev, Ωt, rule=v2g_discharge_constraints)
 
 def v2g_discharge_max(model, ev, t):
     t2 = datetime.strptime(t, "%H:%M").strftime("%H:%M")
     t1 = (datetime.strptime(t, "%H:%M") - timedelta(minutes=Δt)).strftime("%H:%M")
-    
+
     # Discharge power should not exceed the calculated max value
     return model.PEV_d[ev, t2] <= EV[ev]['Pmax_d'] - (EV[ev]['Pmax_d'] / EV[ev]['Pmax_c']) * model.PEV_c[ev, t2]
 

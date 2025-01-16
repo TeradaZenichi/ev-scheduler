@@ -11,7 +11,7 @@ import numpy as np
 import json
 import os
 
-folder = "Marcelo_Data"
+folder = "Sizing/Marcelo_Data"
 
 
 # Load the JSON file
@@ -49,7 +49,7 @@ model = ConcreteModel()
 # Variable definition
 model.PS  = Var(Ωt, domain=Reals)  # Energia comprada da rede
 model.PSp = Var(Ωt, domain=NonNegativeReals)  # Energia comprada da rede
-model.PSn = Var(Ωt, domain=NonNegativeReals)  # Energia comprada da rede
+model.PSn = Var(Ωt, domain=NonNegativeReals, bounds=(0, -data["EDS"]['Pmin']))  # Energia comprada da rede
 
 # EV operation variables
 model.SoCEV = Var(Ωev, Ωt, domain=NonNegativeReals)  # EV State of Charge
