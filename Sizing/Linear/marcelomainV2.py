@@ -11,7 +11,7 @@ import numpy as np
 import json
 import os
 
-folder = "Marcelo_Data"
+folder = "Sizing/Marcelo_Data"
 
 
 # Load the JSON file
