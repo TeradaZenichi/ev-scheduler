@@ -1,24 +1,35 @@
 {
-    "CAPEX":{
+    "CAPEX": {
         "PV": 50,
         "WD": 60,
         "EV": 70,
-        "BESS": 80
+        "BESS": 80,
+        "TG": 100
     },
-    "OPEX":{
+    "OPEX": {
         "rate": 0.1,
         "years": 30
     },
-    "O&M":{
+    "O&M": {
         "PV": 1,
         "WD": 2,
         "EV": 3,
-        "BESS": 4
+        "BESS": 4,
+        "TG": 5
     },
-    "EDS":{
+    "EDS": {
         "Pmax": 500,
         "Pmin": -10,
         "LOAD": 15
+    },
+    "BESS": {
+        "crate": 0.5
+    },
+    "TG": {
+        "CAPEX": 100,
+        "OPEX": 5,  
+        "Pmin": 10,  
+        "Pmax": 100 
     },
     "timestep": 15,
     "scenarios": ["5"]
