@@ -1,5 +1,5 @@
 import plotly.graph_objects as go
-from pyomo.environ import ConcreteModel, Var, Objective, Constraint, NonNegativeReals, SolverFactory, Binary, Reals
+from pyomo.environ import *
 import pyomo.environ as pyo
 from datetime import datetime, timedelta
 import matplotlib
@@ -59,8 +59,25 @@ model.αEV   = Var(Ωev, Ωt, domain=Binary)  # EV charging factor
 model.γEV_c = Var(Ωev, Ωt, domain=Binary)  # EV charging status
 model.γEV_d = Var(Ωev, Ωt, domain=Binary)  # EV discharging status
 
+# Number of charging stations
+model.NEVCS = Var(domain=NonNegativeIntegers)# Number of charging stations
+
+
+# BESS variables
+model.PBESSmax = Var(domain=NonNegativeReals)  # BESS power
+model.EBESSmax = Var(domain=NonNegativeReals)  # BESS energy
+model.SoCBESS = Var(Ωt, domain=NonNegativeReals)   # BESS State of Charge
+model.PBESS_c = Var(Ωt, domain=NonNegativeReals)   # BESS charging power
+model.PBESS_d = Var(Ωt, domain=NonNegativeReals)   # BESS discharging power
+model.γBESS_c = Var(Ωt, domain=Binary)             # BESS charging status
+model.γBESS_d = Var(Ωt, domain=Binary)             # BESS discharging status
+
+# Thermal Generator variables
+model.PTGmax = Var(domain=NonNegativeReals)    # Thermal Generator power
+model.PTG = Var(Ωt, domain=NonNegativeReals)   # Thermal Generator power
+
 # PV variable
-model.PPVmax = Var(domain=NonNegativeReals)          # Maximum PV generation
+model.PPVmax = Var(domain=NonNegativeReals)        # Maximum PV generation
 
 
 # Economic variables
@@ -77,14 +94,33 @@ model.objective = Objective(rule=objective_rule, sense=pyo.minimize)
 
 # CAPEX constraint (ensuring CAPEX is the sum of InstPV and InstWT)
 def capex_constraint_rule(model):
-    PV = model.PPVmax * data["CAPEX"]['PV']  # PV installation cost
-    return model.CAPEX == PV
+    PV    = model.PPVmax   * data["CAPEX"]['PV']  # PV installation cost
+    BESS  = model.EBESSmax * data["CAPEX"]['BESS']  # BESS installation cost
+    TG    = model.PTGmax   * data["CAPEX"]['TG']  # Thermal Generator installation cost
+    NEVCS = model.NEVCS    * data["CAPEX"]['EVCS'] # Total CAPEX
+    return model.CAPEX == PV + TG + BESS + NEVCS
 model.capex_constraint = Constraint(rule=capex_constraint_rule)
 
 # OPEX constraint (sum of prices * PS for each time period t)
 def opex_constraint_rule(model):
-    return model.OPEX == sum(cost[t] * model.PSp[t] for t in Ωt)
+    return model.OPEX == sum(cost[t] * model.PSp[t] + data['TG']['cost'] * model.PTG[t] for t in Ωt)
 model.opex_constraint = Constraint(rule=opex_constraint_rule)
+
+# Balanço de carga: PS = PEV + Demanda - PV*Irradiância - PWT*Vento
+def power_balance_rule(model, t):
+    pv = model.PPVmax * fs['5']['pv'][t]  # Geração fotovoltaica
+    load = data["EDS"]["LOAD"] * fs['5']['load'][t]  # Demanda
+    return model.PS[t] + pv + sum(model.PEV_d[ev, t] for ev in Ωev) + model.PBESS_d[t] + model.PTG[t] == \
+        sum(model.PEV_c[ev, t] for ev in Ωev) + load + model.PBESS_c[t]
+model.power_balance = Constraint(Ωt, rule=power_balance_rule)
+
+def eds_positive_power_limit_rule(model, t):
+    return model.PS[t] <= data["EDS"]["Pmax"]  # Exeplto: Capacidade máxima de 10 kWh por hora
+model.eds_positive_power_limit = Constraint(Ωt, rule=eds_positive_power_limit_rule)
+
+def eds_negative_power_limit_rule(model, t):
+    return model.PS[t] >= data["EDS"]["Pmin"]  # Exemplo: Capacidade máxima de 10 kWh por hora
+model.eds_negative_power_limit = Constraint(Ωt, rule=eds_negative_power_limit_rule)
 
 def eds_power_rule(model, t):
     return model.PS[t] == model.PSp[t] - model.PSn[t]
@@ -112,6 +148,20 @@ model.ev_charging_power_alpha = Constraint(Ωev, Ωt, rule=ev_charging_power_rul
 def ev_discharging_power_rule(model, ev, t):
     return model.PEV_d[ev, t] <= model.αEV[ev, t] * EV[ev]['Pmax_d']
 model.ev_discharging_power_alpha = Constraint(Ωev, Ωt, rule=ev_discharging_power_rule)
+
+def ev_connection_constraint_rule(model, ev, t):
+    ta = datetime.strptime(EV[ev]['arrival'], "%H:%M")
+    td = datetime.strptime(EV[ev]['departure'], "%H:%M")
+    t0 = datetime.strptime(t, "%H:%M")
+    t2 = datetime.strptime(t, "%H:%M").strftime("%H:%M")
+    t1 = (datetime.strptime(t, "%H:%M") - timedelta(minutes=Δt)).strftime("%H:%M")
+    if ta < td and t0 > ta and t0 <= td:
+        return model.αEV[ev, t2] >= model.αEV[ev, t1]
+    elif ta > td and not (t0 > td and t0 <= ta):
+        return model.αEV[ev, t2] >= model.αEV[ev, t1]
+    else:
+        return Constraint.Skip
+model.ev_connection_constraint = Constraint(Ωev, Ωt, rule=ev_connection_constraint_rule)
 
 def socev_update(model, ev, t):
     ta = datetime.strptime(EV[ev]['arrival'], "%H:%M")
@@ -150,23 +200,58 @@ def v2g_binnary_rule(model, ev, t):
 model.v2g_binnary = Constraint(Ωev, Ωt, rule=v2g_binnary_rule)
 
 
-def eds_positive_power_limit_rule(model, t):
-    return model.PS[t] <= data["EDS"]["Pmax"]  # Exeplto: Capacidade máxima de 10 kWh por hora
-model.eds_positive_power_limit = Constraint(Ωt, rule=eds_positive_power_limit_rule)
-
-def eds_negative_power_limit_rule(model, t):
-    return model.PS[t] >= data["EDS"]["Pmin"]  # Exemplo: Capacidade máxima de 10 kWh por hora
-model.eds_negative_power_limit = Constraint(Ωt, rule=eds_negative_power_limit_rule)
+# EVCS constraints
+def evcs_constraint_rule(model, t):
+    return model.NEVCS >= sum(model.αEV[ev, t] for ev in Ωev)
+model.evcs_constraint = Constraint(Ωt, rule=evcs_constraint_rule)
 
 
-# Balanço de carga: PS = PEV + Demanda - PV*Irradiância - PWT*Vento
-def power_balance_rule(model, t):
-    pv = model.PPVmax * fs['5']['pv'][t]  # Geração fotovoltaica
-    load = data["EDS"]["LOAD"] * fs['5']['load'][t]  # Demanda
-    return model.PS[t] + pv + sum(model.PEV_d[ev, t] for ev in Ωev) == sum(model.PEV_c[ev, t] for ev in Ωev) + load
-model.power_balance = Constraint(Ωt, rule=power_balance_rule)
+# TG constraints
+def tg_power_rule(model, t):
+    return model.PTG[t] <= model.PTGmax
+model.tg_power = Constraint(Ωt, rule=tg_power_rule)
 
+#BESS constraints
+def bess_charging_power_rule(model, t):
+    return model.PBESS_c[t] <= model.PBESSmax
+model.bess_charging_power = Constraint(Ωt, rule=bess_charging_power_rule)
 
+def bess_discharging_power_rule(model, t):
+    return model.PBESS_d[t] <= model.PBESSmax
+model.bess_discharging_power = Constraint(Ωt, rule=bess_discharging_power_rule)
+
+def bess_energy_rule(model, t):
+    t2 = datetime.strptime(t, "%H:%M").strftime("%H:%M")
+    t1 = (datetime.strptime(t, "%H:%M") - timedelta(minutes=Δt)).strftime("%H:%M")
+    η = data["BESS"]["eff"]
+    return model.SoCBESS[t2] == model.SoCBESS[t1] + η * model.PBESS_c[t2] * (Δt / 60) - model.PBESS_d[t2] * (Δt / 60 * η)
+model.bess_energy = Constraint(Ωt, rule=bess_energy_rule)
+
+def bess_initial_energy_rule(model):
+    return model.SoCBESS[Ωt[0]] == data["BESS"]["SoCini"] * model.EBESSmax
+model.bess_initial_energy = Constraint(rule=bess_initial_energy_rule)
+
+def bess_final_energy_rule(model):
+    return model.SoCBESS[Ωt[-1]] == data["BESS"]["SoCini"] * model.EBESSmax
+model.bess_final_energy = Constraint(rule=bess_final_energy_rule)
+
+def bess_charging_power_binary_rule(model, t):
+    M = 1e6
+    return model.PBESS_c[t] <= model.γBESS_c[t] * M
+model.bess_charging_power_binary = Constraint(Ωt, rule=bess_charging_power_binary_rule)
+
+def bess_discharging_power_binary_rule(model, t):
+    M = 1e6
+    return model.PBESS_d[t] <= model.γBESS_d[t] * M
+model.bess_discharging_power_binary = Constraint(Ωt, rule=bess_discharging_power_binary_rule)
+
+def bess_charging_status_rule(model, t):
+    return model.γBESS_c[t] + model.γBESS_d[t] <= 1
+model.bess_charging_status = Constraint(Ωt, rule=bess_charging_status_rule)
+
+def bess_crate_rule(model):
+    return model.PBESSmax == data["BESS"]["crate"] * model.EBESSmax
+model.bess_crate = Constraint(rule=bess_crate_rule)
 
 # Resolvendo o modelo
 results = SolverFactory('gurobi').solve(model)
@@ -177,9 +262,13 @@ print("Resultados de Otimização:")
 # Check solver status
 if results.solver.status == pyo.SolverStatus.ok:
     # Display results
-    print(f"Total Energy Cost: {pyo.value(model.objective):.2f} units")
+    print(f"Total Cost: {pyo.value(model.objective)/1e6:.2f} MUSD")
     print(f"Maximum Solar Generation Capacity (PPVmax): {model.PPVmax.value:.2f} kW")
+    print(f"Maximum BESS Power (PBESSmax): {model.PBESSmax.value:.2f} kW")
+    print(f"Maximum BESS Energy (EBESSmax): {model.EBESSmax.value:.2f} kWh")
+    print(f"Maximum Thermal Generator Power (PTGmax): {model.PTGmax.value:.2f} kW")
     
+    print(f"Number of EVCS: {model.NEVCS.value:.0f}")
     # Number of time periods (using Ωt to determine the range)
     T = len(Ωt)  # Define T as the length of Ωt, which is the number of time steps
     e = len(Ωev)
@@ -191,12 +280,7 @@ else:
 
 
 
-# Exibindo os resultados de CAPEX e OPEX
-#print(f"CAPEX (Custo de Instalação Total): {CAPEX:.2f} unidades")
-#print(f"OPEX (Custo Operaçãp): {OPEX:.2f} unidades")
-#print(f"OPEX (Custo Operacional Anual): {OPEX_anual:.2f} unidades")
 
-# Resultados do modelo de otimização (valores de SoC, PS, PEV, InstPV e InstWT de cada hora)
 
 # Creating graphs with Plotly
 fig = go.Figure()
@@ -287,6 +371,15 @@ sum_PEV_values_d = [
     sum(-1*model.PEV_d[ev, t].value for ev in Ωev) for t in Ωt
 ]  # Sum of PEV values for each time step
 # Create the figure for plotting all variables
+
+counter = 0
+for ev in Ωev:
+    for t in Ωt:
+        if model.PEV_c[ev, t].value > 0 and model.PEV_d[ev, t].value > 0:
+            print(f"Erro: EV {ev} está carregando e descarregando ao mesmo tempo as {t}")
+            counter += 1
+print(f"Total de {counter} erros")
+
 fig = go.Figure()
 
 # Add trace for summed Energy Supplied by EVs (PEV)

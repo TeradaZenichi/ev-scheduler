@@ -347,7 +347,6 @@ colors = {
     'Net BESS Power': 'blue',
     'Thermal Generator': 'green'  # Add a color for the thermal generator
 }
-
 # Generate graphs for each contingency scenario
 for c in Ωc:
     # Extract data for the current contingency scenario
