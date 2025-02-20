@@ -88,16 +88,10 @@ model.OPEX = Var(within=NonNegativeReals)  # Total OPEX
 # Number of charging stations
 model.NEVCS = Var(domain=NonNegativeReals)
 
-# Add operational cost parameters (define these in your data or parameters.json)
-data["BESS_charge_cost"] = 0.05  # Cost per kWh for BESS charging
-data["BESS_discharge_cost"] = 0.03  # Cost per kWh for BESS discharging
-data["EV_discharge_cost"] = 0.10  # Cost per kWh for EV discharging
-
-
 def objective_rule(model):
     total_opex = 0
     for n in range(1, data["OPEX"]["years"] + 1):
-        total_opex += model.OPEX * 365 * ((1 + data["OPEX"]["rate"]) ** (n - 1))
+        total_opex += model.OPEX * ((1 + data["OPEX"]["rate"]) ** (n - 1))
 
     return total_opex + model.CAPEX
 model.objective = Objective(rule=objective_rule, sense=minimize)
@@ -112,23 +106,24 @@ def capex_constraint_rule(model):
 model.capex_constraint = Constraint(rule=capex_constraint_rule)
 
 def opex_constraint_rule(model):
-    eds_opex = sum(πc[c] * (cost[t] * model.PSp[t, c] * (Δt / 60)) for t in Ωt for c in Ωc)
-    bess_oem = sum(πc[c] * (
-        data["BESS_charge_cost"] * model.PBESS_c[t, c] * (Δt / 60) +
-        data["BESS_discharge_cost"] * model.PBESS_d[t, c] * (Δt / 60))
-        for t in Ωt for c in Ωc
-    )
-    ev_opex = sum(πc[c] * (
-        data["EV_discharge_cost"] * model.PEV_d[ev, t, c] * (Δt / 60))
+    eds_opex = 365 * sum(πc[c] * (cost[t] * model.PSp[t, c] * (Δt / 60)) for t in Ωt for c in Ωc)
+    
+    ev_opex = 365 * sum(πc[c] * (
+        data["EVCS"]["discharging_cost"] * model.PEV_d[ev, t, c] * (Δt / 60))
         for ev in Ωev for t in Ωt for c in Ωc
     )
-    tg_opex = sum(πc[c] * (
+    tg_opex = 365 * sum(πc[c] * (
         data["TG"]["OPEX"] * model.PTG[t, c] * (Δt / 60))
         for t in Ωt for c in Ωc
     )
-    pv_oem    = 0.01 * model.PPVmax * data["PV"]['CAPEX']  # 10% of PV CAPEX
-    # tg_oem    = 0.1 * model.TG_MAX_CAP * data["TG"]["CAPEX"]  # 10% of TG CAPEX
-    return model.OPEX == eds_opex + bess_oem + ev_opex + tg_opex  + pv_oem #+ bess_oem + tg_oem
+    pv_oem    = data['PV']['O&M'] * model.PPVmax * data["PV"]['CAPEX']
+    bess_oem = 365 * sum(πc[c] * (
+        data["BESS"]["charging_cost"] * model.PBESS_c[t, c] * (Δt / 60) +
+        data["BESS"]["discharging_cost"] * model.PBESS_d[t, c] * (Δt / 60))
+        for t in Ωt for c in Ωc
+    )
+    evcs_oem = data["EVCS"]["O&M"] * model.NEVCS * data["EVCS"]["CAPEX"]
+    return model.OPEX == eds_opex + bess_oem + ev_opex + tg_opex  + pv_oem + evcs_oem
 model.opex_constraint = Constraint(rule=opex_constraint_rule)
 
 
@@ -380,18 +375,20 @@ os.makedirs("Results", exist_ok=True)
 # ==========================================
 
 colors = {
-    'Substation': 'red',
+    'Substation': 'blue',
     'Demand': 'black',
     'Solar': 'orange',
-    'Net EV Power': 'purple',
-    'Net BESS Power': 'blue',
-    'Thermal Generator': 'green'
+    'Total EV charging Power': 'purple',
+    'Total EV discharging Power': 'pink',
+    # 'Net BESS Power': 'green',
+    'Bess charging Power': 'green',
+    'Bess discharging Power': 'yellow',
+    'Thermal Generator': 'red'
 }
 
 for c in Ωc:
     # Garante que c seja string segura para nome de arquivo
     safe_c = str(c)
-    # Remove/substitui caracteres que não sejam letras, dígitos ou underline
     safe_c = re.sub(r'[^a-zA-Z0-9_]+', '_', safe_c)
 
     PS_values = contingency_results[c]['PS']
@@ -404,8 +401,9 @@ for c in Ωc:
     PTG_values = contingency_results[c]['PTG']
     
     # Calcula Net EV e Net BESS
-    net_EV_power = [PEV_c_values[t_idx] - PEV_d_values[t_idx] for t_idx in range(len(Ωt))]
+    # net_EV_power = [PEV_c_values[t_idx] - PEV_d_values[t_idx] for t_idx in range(len(Ωt))]
     net_BESS_power = [PBESS_c_values[t_idx] - PBESS_d_values[t_idx] for t_idx in range(len(Ωt))]
+    discharging = [-1*PBESS_d_values[t_idx] for t_idx in range(len(Ωt))]
 
     plt.figure(figsize=(10, 6))
     ax = plt.gca()
@@ -414,12 +412,17 @@ for c in Ωc:
     ax.plot(Ωt, PS_values, label='Substation Power (PS)', color=colors['Substation'], linewidth=2)
     ax.plot(Ωt, demand_values, label='Demand', color=colors['Demand'], linewidth=2, linestyle='--')
     ax.plot(Ωt, PV_generated, label='Solar Generation', color=colors['Solar'], linewidth=2)
-    ax.plot(Ωt, net_EV_power, label='Net EV Power (EVc - EVd)', color=colors['Net EV Power'], linewidth=2)
+    ax.plot(Ωt, PEV_c_values, label='Total EV charging Power (PEVc)', color=colors['Total EV charging Power'], linewidth=2)
+    ax.plot(Ωt, PEV_d_values, label='Total EV discharging Power (PEVd)', color=colors['Total EV discharging Power'], linewidth=2)
     ax.plot(Ωt, PTG_values, label='Thermal Generator Power (PTG)', color=colors['Thermal Generator'], linewidth=2)
     
     # Plot do Net BESS Power como barras
-    ax.bar(Ωt, net_BESS_power, color=colors['Net BESS Power'], alpha=0.5,
-           label='Net BESS Power (BESSc - BESSd)')
+    # ax.bar(Ωt, net_BESS_power, color=colors['Net BESS Power'], alpha=0.5,
+    #        label='Net BESS Power (BESSc - BESSd)')
+    ax.bar(Ωt, PBESS_c_values, color=colors['Bess charging Power'], alpha=0.5,
+              label='BESS Charging Power (PBESSc)')
+    ax.bar(Ωt, discharging, color=colors['Bess discharging Power'], alpha=0.5,
+                label='BESS Discharging Power (PBESSd)')
 
     ax.set_title(f"Power in the System Over Time (Contingency {c})", 
                  fontsize=14, fontweight='bold')
@@ -427,50 +430,121 @@ for c in Ωc:
     ax.set_ylabel("Power (kW)", fontsize=12)
     ax.grid(True, which='both', linestyle=':', color='lightgray')
     ax.legend(loc='upper left', fontsize=10, frameon=True)
-    
+
+    # ========================================
+    # Ajuste dos Ticks do eixo X
+    # ========================================
+    num_ticks = 10  # Definir um número razoável de ticks para melhor visualização
+    tick_positions = list(range(0, len(Ωt), max(1, len(Ωt) // num_ticks)))  # Espaçamento uniforme
+    tick_labels = [Ωt[i] for i in tick_positions]  # Apenas os valores selecionados
+
+    ax.set_xticks(tick_positions)
+    ax.set_xticklabels(tick_labels, rotation=45, ha='right')  # Rotaciona para melhor leitura
+
     plt.tight_layout()
-    # Usa o sufixo seguro no nome do arquivo
     plt.savefig(f"Results/Contingency_{safe_c}_Power_Graph.png", dpi=300)
     plt.close()
+
 
 # ==========================================
 # 2) HEATMAP DE SoC PARA EV E BESS (para cada c)
 # ==========================================
+# Função para converter string "HH:MM" para objeto time
+def to_time(hhmm):
+    return datetime.strptime(hhmm, "%H:%M").time()
 
-# Cria o colormap customizado apenas uma vez
+# Função que verifica se o EV está PRESENTE naquele instante `t`
+def is_ev_present(t: datetime.time, arrival: datetime.time, departure: datetime.time) -> bool:
+    if arrival < departure:
+        return arrival <= t <= departure
+    else:
+        return not (departure <= t <= arrival)  # O contrário do período de ausência
+
+
+
 colorscale = [
-    (0.0, 'lightyellow'),  # SoC = 0
-    (0.5, 'orange'),       # SoC = 0.5
-    (1.0, 'darkred')       # SoC = 1
+    (0.0, 'lightyellow'),  # SoC=0
+    (0.5, 'orange'),       # SoC=0.5
+    (1.0, 'darkred')       # SoC=1
 ]
 cmap_custom = LinearSegmentedColormap.from_list('CustomSoC', colorscale)
 
+# ==========================================
+# Loop para cada contingência c
+# ==========================================
 for c in Ωc:
-    # Garante que c seja string segura para nome de arquivo
-    safe_c = str(c)
-    safe_c = re.sub(r'[^a-zA-Z0-9_]+', '_', safe_c)
+    safe_c = re.sub(r'[^a-zA-Z0-9_]+', '_', str(c))
 
+    # 1) Cria DataFrame de SoC (EV)
     ev_soc_values = {
-        ev: [model.EEV[ev, t, c].value / EV[ev]['Emax'] for t in Ωt] 
+        ev: [model.EEV[ev, t, c].value / EV[str(ev)]['Emax'] for t in Ωt]
         for ev in Ωev
     }
+    df_ev_soc = pd.DataFrame(ev_soc_values, index=Ωt)
 
-    # BESS SoC
+    # 2) Cria DataFrame de αEV (EV)
+    alpha_ev_values = {
+        ev: [model.αEV[ev, t, c].value for t in Ωt]
+        for ev in Ωev
+    }
+    df_ev_alpha = pd.DataFrame(alpha_ev_values, index=Ωt)
+
+    # 3) Cria DataFrame de SoC (BESS)
     if model.EmaxBESS.value > 0:
         bess_soc_values = {
             'BESS': [model.EBESS[t, c].value / model.EmaxBESS.value for t in Ωt]
         }
         df_bess_soc = pd.DataFrame(bess_soc_values, index=Ωt)
     else:
-        # Se não há BESS, cria um DF zerado
         df_bess_soc = pd.DataFrame(0, index=Ωt, columns=['BESS'])
-    
-    df_ev_soc = pd.DataFrame(ev_soc_values, index=Ωt)
+
+    # 4) Concatena EV + BESS para plotar SoC
     df_combined = pd.concat([df_ev_soc, df_bess_soc], axis=1)
-    
+
+    # ==========================================
+    # Construindo o DataFrame de anotações
+    # ==========================================
+    df_annotations = pd.DataFrame(index=df_combined.index, columns=df_combined.columns, dtype=object)
+
+    # Convertendo Ωt para objetos time (para comparar com arrival/departure)
+    times_as_time = [to_time(tt) for tt in Ωt]
+
+    # Obtém arrival/departure em formato time
+    arrival_time = {}
+    departure_time = {}
+    for ev in Ωev:
+        arr_str = EV[str(ev)]['arrival']
+        dep_str = EV[str(ev)]['departure']
+        arrival_time[ev] = to_time(arr_str)
+        departure_time[ev] = to_time(dep_str)
+
+    # Preenche cada célula apenas quando o EV está presente
+    for row_idx, t_str in enumerate(Ωt):
+        t_time = times_as_time[row_idx]
+        for col in df_combined.columns:
+            soc_val = df_combined.loc[t_str, col]  # SoC
+            
+            # Se for BESS, apenas exibe o SoC
+            if col == 'BESS':
+                df_annotations.loc[t_str, col] = f"{soc_val*100:.1f}%"
+            else:
+                # 'col' é o ID do EV
+                alpha_val = df_ev_alpha.loc[t_str, col]
+                arr_t = arrival_time[col]
+                dep_t = departure_time[col]
+
+                # Apenas exibir se EV está presente
+                if is_ev_present(t_time, arr_t, dep_t):
+                    df_annotations.loc[t_str, col] = f"{soc_val*100:.1f}% | α={int(alpha_val)}"
+                else:
+                    df_annotations.loc[t_str, col] = ""
+
+    # ==========================================
+    # Plot do heatmap de SoC
+    # ==========================================
     plt.figure(figsize=(12, 6))
     ax = plt.gca()
-    
+
     sns.heatmap(
         df_combined.T,
         cmap=cmap_custom,
@@ -478,68 +552,18 @@ for c in Ωc:
         vmax=1,
         linewidths=0.5,
         cbar_kws={'label': 'State of Charge (SoC)'},
+        annot=df_annotations.T,
+        fmt="",
+        annot_kws={'size': 6, 'rotation': 90},  # Fonte menor e rotação
         ax=ax
     )
-    
-    ax.set_title(f"EV and BESS State of Charge (SoC) Over Time - Contingency {c}",
-                 fontsize=14, fontweight='bold')
+
+    ax.set_title(f"EV & BESS SoC c/ αEV - Contingency {c}", fontsize=14, fontweight='bold')
     ax.set_xlabel("Time (HH:MM)", fontsize=12)
     ax.set_ylabel("EVs and BESS", fontsize=12)
     plt.xticks(rotation=45, ha='right')
-    
+
     plt.tight_layout()
-    plt.savefig(f"Results/EV_and_BESS_SoC_Heatmap_{safe_c}.png", dpi=300)
+    plt.savefig(f"Results/SoC_and_alphaEV_Heatmap_{safe_c}.png", dpi=300)
     plt.close()
 
-
-# Exemplo de loop para c em Ωc
-for c in Ωc:
-    # Garante que c seja string "segura" para nome de arquivo
-    safe_c = str(c)
-    # Substitui caracteres especiais por underline
-    safe_c = re.sub(r'[^a-zA-Z0-9_]+', '_', safe_c)
-
-    # Monta dicionário com valores binários de αEV para cada EV e t, no cenário c
-    alpha_ev_values = {
-        ev: [model.αEV[ev, t, c].value for t in Ωt] 
-        for ev in Ωev
-    }
-    
-    # Cria um DataFrame com os EVs como colunas e tempos Ωt como índice
-    df_alpha_ev = pd.DataFrame(alpha_ev_values, index=Ωt)
-    
-    # Para visualizar 0 como cor clara e 1 como cor forte, podemos criar um colormap simples:
-    # Exemplo: 0 (branco) até 1 (vermelho escuro)
-    colorscale_bin = [
-        (0.0, 'white'),   
-        (1.0, 'darkred')  
-    ]
-    cmap_binary = LinearSegmentedColormap.from_list('BinaryAlphaEV', colorscale_bin)
-
-    # Cria a figura
-    plt.figure(figsize=(12, 6))
-    ax = plt.gca()
-    
-    # Transpõe o DataFrame (para ter EVs no eixo Y, tempos no eixo X)
-    sns.heatmap(
-        df_alpha_ev.T,
-        cmap=cmap_binary,
-        vmin=0,
-        vmax=1,
-        linewidths=0.5,
-        cbar_kws={'label': 'αEV (Charging Factor)'},
-        ax=ax
-    )
-
-    # Configura título e eixos
-    ax.set_title(f"EV Charging Factor (αEV) Heatmap - Contingency {c}",
-                 fontsize=14, fontweight='bold')
-    ax.set_xlabel("Time (HH:MM)", fontsize=12)
-    ax.set_ylabel("Electric Vehicles (EV)", fontsize=12)
-    
-    plt.xticks(rotation=45, ha='right')
-    plt.tight_layout()
-    
-    # Salva o gráfico com sufixo seguro
-    plt.savefig(f"Results/alphaEV_Heatmap_{safe_c}.png", dpi=300)
-    plt.close()

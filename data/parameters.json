@@ -1,36 +1,37 @@
 {
-    "PV": {
-        "CAPEX": 50
-    },
-    "EVCS":{
-        "CAPEX": 100000
-    },
     "OPEX": {
         "rate": 0.1,
         "years": 30
     },
-    "O&M": {
-        "PV": 1,
-        "WD": 2,
-        "EV": 3,
-        "BESS": 4,
-        "TG": 5
-    },
     "EDS": {
         "Pmax": 100,
         "Pmin": -100,
-        "LOAD": 15
+        "LOAD": 15,
+        "GHG": 0.5
+    },
+    "PV": {
+        "CAPEX": 310,
+        "O&M": 0.1
     },
     "BESS": {
-        "CAPEX": 80,
+        "CAPEX": 1553,
         "crate": 0.5,
-        "SoCini": 0.5
+        "SoCini": 0.5,
+        "charging_cost": 0.05,
+        "discharging_cost": 0.03
     },
     "TG": {
         "CAPEX": 100,
         "OPEX": 0.80,  
         "Pmin": 10,  
-        "Pmax": 100 
+        "Pmax": 100,
+        "GHG": 0.8 
+    },
+    "EVCS":{
+        "CAPEX": 12000,
+        "O&M": 0.1,
+        "charging_cost": 1,
+        "discharging_cost": 0.1
     },
     "timestep": 15,
     "scenarios": ["5"],
