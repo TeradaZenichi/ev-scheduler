@@ -1,0 +1,42 @@
+{
+    "PV": {
+        "CAPEX": 50
+    },
+    "EVCS":{
+        "CAPEX": 100000
+    },
+    "OPEX": {
+        "rate": 0.1,
+        "years": 30
+    },
+    "O&M": {
+        "PV": 1,
+        "WD": 2,
+        "EV": 3,
+        "BESS": 4,
+        "TG": 5
+    },
+    "EDS": {
+        "Pmax": 100,
+        "Pmin": -100,
+        "LOAD": 15
+    },
+    "BESS": {
+        "CAPEX": 80,
+        "crate": 0.5,
+        "SoCini": 0.5
+    },
+    "TG": {
+        "CAPEX": 100,
+        "OPEX": 0.80,  
+        "Pmin": 10,  
+        "Pmax": 100 
+    },
+    "timestep": 15,
+    "scenarios": ["5"],
+    "off-grid":{
+        "set": ["06:00",  "12:00",  "18:00"],
+        "prob": 0.1,
+        "duration": 2
+    }
+}
