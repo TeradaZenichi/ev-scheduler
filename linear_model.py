@@ -170,6 +170,9 @@ model.eds_power_constraint = Constraint(Ωt, Ωc, rule=eds_power_rule)
 ################################################################################
 #########################   BESS constraints ###################################
 ################################################################################
+
+ηBESS = data["BESS"]["efficiency"]
+
 def bess_energy_rule(model, t, c):
     return model.EBESS[t, c] <= model.EmaxBESS
 model.bess_energy_constraint = Constraint(Ωt, Ωc, rule=bess_energy_rule)
@@ -185,22 +188,19 @@ model.bess_power_d = Constraint(Ωt, Ωc, rule=bess_power_rule_d)
 def bess_energy_update_rule(model, t, c):
     t2 = datetime.strptime(t, "%H:%M").strftime("%H:%M")
     t1 = (datetime.strptime(t, "%H:%M") - timedelta(minutes=Δt)).strftime("%H:%M")
-    η = 1  # BESS efficiency
-    return model.EBESS[t2, c] == model.EBESS[t1, c] + η * model.PBESS_c[t2, c] * (Δt / 60) - model.PBESS_d[t2, c] * (η * Δt / 60)
+    return model.EBESS[t2, c] == model.EBESS[t1, c] + ηBESS * model.PBESS_c[t2, c] * (Δt / 60) - model.PBESS_d[t2, c] * (ηBESS * Δt / 60)
 model.bess_energy_update = Constraint(Ωt, Ωc, rule=bess_energy_update_rule)
 
 def bess_charging_linearization_rule(model, t, c):
     t1 = (datetime.strptime(t, "%H:%M") - timedelta(minutes=Δt)).strftime("%H:%M")
     t2 = datetime.strptime(t, "%H:%M").strftime("%H:%M")
-    η = 1  # BESS efficiency
-    return model.PBESS_c[t2, c] <= (model.EmaxBESS - model.EBESS[t1, c]) / (η * Δt / 60)
+    return model.PBESS_c[t2, c] <= (model.EmaxBESS - model.EBESS[t1, c]) / (ηBESS * Δt / 60)
 model.bess_charging_linearization = Constraint(Ωt, Ωc, rule=bess_charging_linearization_rule)
 
 def bess_discharging_linearization_1_rule(model, t, c):
     t1 = (datetime.strptime(t, "%H:%M") - timedelta(minutes=Δt)).strftime("%H:%M")
     t2 = datetime.strptime(t, "%H:%M").strftime("%H:%M")
-    η = 1  # BESS efficiency
-    return model.PBESS_d[t2, c] <= model.EBESS[t1, c] * η / (Δt / 60)
+    return model.PBESS_d[t2, c] <= model.EBESS[t1, c] * ηBESS / (Δt / 60)
 model.bess_discharging_linearization_1 = Constraint(Ωt, Ωc, rule=bess_discharging_linearization_1_rule)
 
 def bess_discharging_linearization_2_rule(model, t, c):
@@ -281,11 +281,11 @@ def ev_energy_update_rule(model, ev, t, c):
     t0 = datetime.strptime(t, "%H:%M")
     t2 = datetime.strptime(t, "%H:%M").strftime("%H:%M")
     t1 = (datetime.strptime(t, "%H:%M") - timedelta(minutes=Δt)).strftime("%H:%M")
-    η = EV[ev]['eff']
+    ηEV = EV[ev]['eff']
     if ta < td and t0 > ta and t0 <= td:
-        return model.EEV[ev, t2, c] == model.EEV[ev, t1, c] + η * model.PEV_c[ev, t2, c] * (Δt / 60) - model.PEV_d[ev, t2, c] * (η * Δt / 60)
+        return model.EEV[ev, t2, c] == model.EEV[ev, t1, c] + ηEV * model.PEV_c[ev, t2, c] * (Δt / 60) - model.PEV_d[ev, t2, c] * (ηEV * Δt / 60)
     elif ta > td and not (t0 > td and t0 <= ta):
-        return model.EEV[ev, t2, c] == model.EEV[ev, t1, c] + η * model.PEV_c[ev, t2, c] * (Δt / 60) - model.PEV_d[ev, t2, c] * (η * Δt / 60)
+        return model.EEV[ev, t2, c] == model.EEV[ev, t1, c] + ηEV * model.PEV_c[ev, t2, c] * (Δt / 60) - model.PEV_d[ev, t2, c] * (ηEV * Δt / 60)
     elif t0 == ta:
         return model.EEV[ev, t, c] == EV[ev]['SoCini'] * EV[ev]['Emax']
     else:
@@ -308,26 +308,23 @@ model.ev_energy_offgrid = Constraint(Ωev, Ωt, Ωc, rule=ev_energy_offgrid_rule
 # Modified version of the V2G constraints that handles time correctly
 def v2g_constraints(model, ev, t, c):
     t2 = datetime.strptime(t, "%H:%M").strftime("%H:%M")
-    t1 = (datetime.strptime(t, "%H:%M") - timedelta(minutes=Δt)).strftime("%H:%M")   
-    η = EV[ev]['eff']
-    
-    return model.PEV_c[ev, t2, c] <= (EV[ev]['Emax'] - model.EEV[ev, t1, c])  / (η * Δt / 60) 
+    t1 = (datetime.strptime(t, "%H:%M") - timedelta(minutes=Δt)).strftime("%H:%M")  
+    ηEV = EV[ev]['eff']    
+    return model.PEV_c[ev, t2, c] <= (EV[ev]['Emax'] - model.EEV[ev, t1, c])  / (ηEV * Δt / 60) 
 
 model.v2g_charge = Constraint(Ωev, Ωt, Ωc, rule=v2g_constraints)
 
 def v2g_discharge_constraints(model, ev, t, c):
     t2 = datetime.strptime(t, "%H:%M").strftime("%H:%M")
     t1 = (datetime.strptime(t, "%H:%M") - timedelta(minutes=Δt)).strftime("%H:%M")
-    η = EV[ev]['eff']
-
-    return model.PEV_d[ev, t2, c] <= (model.EEV[ev, t1, c] * η) / (Δt / 60)
+    ηEV = EV[ev]['eff']
+    return model.PEV_d[ev, t2, c] <= (model.EEV[ev, t1, c] * ηEV) / (Δt / 60)
 
 model.v2g_discharge = Constraint(Ωev, Ωt, Ωc, rule=v2g_discharge_constraints)
 
 def v2g_discharge_max(model, ev, t, c):
     t2 = datetime.strptime(t, "%H:%M").strftime("%H:%M")
     t1 = (datetime.strptime(t, "%H:%M") - timedelta(minutes=Δt)).strftime("%H:%M")
-
     # Discharge power should not exceed the calculated max value
     return model.PEV_d[ev, t2, c] <= EV[ev]['Pmax_d'] - (EV[ev]['Pmax_d'] / EV[ev]['Pmax_c']) * model.PEV_c[ev, t2, c]
 model.v2g_discharge_max = Constraint(Ωev, Ωt, Ωc, rule=v2g_discharge_max)
@@ -567,3 +564,112 @@ for c in Ωc:
     plt.savefig(f"Results/SoC_and_alphaEV_Heatmap_{safe_c}.png", dpi=300)
     plt.close()
 
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+from matplotlib.colors import LinearSegmentedColormap
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+from matplotlib.colors import LinearSegmentedColormap
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+# ==========================================
+# Function to plot power balance with stacked bars
+# ==========================================
+def plot_power_balance(contingency_results, c, safe_c):
+    # Extract data for the contingency scenario
+    PS_values = contingency_results[c]['PS']
+    PBESS_c_values = contingency_results[c]['PBESS_c']
+    PBESS_d_values = contingency_results[c]['PBESS_d']
+    PEV_c_values = contingency_results[c]['PEV_c']
+    PEV_d_values = contingency_results[c]['PEV_d']
+    PV_generated = contingency_results[c]['PV']
+    demand_values = contingency_results[c]['Demand']
+    PTG_values = contingency_results[c]['PTG']
+
+    # Prepare data for stacked bars
+    power_in_components = {
+        'Substation': PS_values,
+        'Solar': PV_generated,
+        'Thermal Generator': PTG_values,
+        'EV Discharging': [sum(model.PEV_d[ev, Ωt[t_idx], c].value for ev in Ωev) for t_idx in range(len(Ωt))],
+        'BESS Discharging': [model.PBESS_d[Ωt[t_idx], c].value for t_idx in range(len(Ωt))]
+    }
+    power_out_components = {
+        'Demand': demand_values,
+        'BESS Charging': [model.PBESS_c[Ωt[t_idx], c].value for t_idx in range(len(Ωt))],
+        'EV Charging': [sum(model.PEV_c[ev, Ωt[t_idx], c].value for ev in Ωev) for t_idx in range(len(Ωt))]
+    }
+
+    # Define a vibrant color palette
+    colors_in = {
+        'Substation': '#1f77b4',  # Blue
+        'Solar': '#ff7f0e',       # Orange
+        'Thermal Generator': '#d62728',  # Red
+        'EV Discharging': '#9467bd',  # Purple
+        'BESS Discharging': '#8c564b'  # Brown
+    }
+    colors_out = {
+        'Demand': '#2ca02c',  # Green
+        'BESS Charging': '#e377c2',  # Pink
+        'EV Charging': '#17becf'  # Cyan
+    }
+
+    # Create stacked bar positions
+    x = np.arange(len(Ωt))  # All timestamps
+    width = 0.8  # Bar width
+
+    # Plot power in (positive)
+    bottom_in = np.zeros(len(Ωt))
+    for label in ['Substation', 'Solar', 'Thermal Generator', 'EV Discharging', 'BESS Discharging']:
+        values = power_in_components[label]
+        plt.bar(x, values, width, bottom=bottom_in, label=label, color=colors_in[label])
+        bottom_in += values
+
+    # Plot power out (negative)
+    bottom_out = np.zeros(len(Ωt))
+    for label in ['Demand', 'BESS Charging', 'EV Charging']:
+        values = power_out_components[label]
+        plt.bar(x, [-v for v in values], width, bottom=bottom_out, label=label, color=colors_out[label])
+        bottom_out += [-v for v in values]
+
+    # Customize the plot
+    plt.title(f"Power Balance Over Time (Contingency {c})", fontsize=14, fontweight='bold')
+    plt.xlabel("Time (HH:MM)", fontsize=12)
+    plt.ylabel("Power (kW)", fontsize=12)
+
+    # Reduce the number of x-axis labels for better readability
+    num_ticks = 10  # Number of labels to display
+    step = max(1, len(Ωt) // num_ticks)
+    selected_times = Ωt[::step]
+    selected_indices = range(0, len(Ωt), step)
+
+    plt.xticks(selected_indices, selected_times, rotation=45, ha='right')
+    plt.grid(True, which='both', linestyle=':', color='lightgray')
+    plt.legend(loc='upper left', fontsize=10, frameon=True)
+
+    # Save the plot
+    plt.tight_layout()
+    plt.savefig(f"Results/Power_Balance_Stacked_{safe_c}.png", dpi=300)
+    plt.close()
+
+# ==========================================
+# Loop for each contingency c
+# ==========================================
+for c in Ωc:
+    safe_c = re.sub(r'[^a-zA-Z0-9_]+', '_', str(c))
+    plot_power_balance(contingency_results, c, safe_c)

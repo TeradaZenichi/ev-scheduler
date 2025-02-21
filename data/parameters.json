@@ -11,14 +11,15 @@
     },
     "PV": {
         "CAPEX": 310,
-        "O&M": 0.1
+        "O&M": 0.02
     },
     "BESS": {
         "CAPEX": 1553,
         "crate": 0.5,
         "SoCini": 0.5,
         "charging_cost": 0.05,
-        "discharging_cost": 0.03
+        "discharging_cost": 0.03,
+        "efficiency": 0.9591
     },
     "TG": {
         "CAPEX": 100,
@@ -29,7 +30,7 @@
     },
     "EVCS":{
         "CAPEX": 12000,
-        "O&M": 0.1,
+        "O&M": 0.02,
         "charging_cost": 1,
         "discharging_cost": 0.1
     },
