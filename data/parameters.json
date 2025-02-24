@@ -35,7 +35,7 @@
         "discharging_cost": 0.1
     },
     "timestep": 15,
-    "scenarios": ["5"],
+    "scenarios": ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
     "off-grid":{
         "set": ["06:00",  "12:00",  "18:00"],
         "prob": 0.1,
