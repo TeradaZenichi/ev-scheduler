@@ -58,9 +58,12 @@ for c in Ωc:
 for s in Ωs:
     πs[s] = fs[s]['prob']
 
-# Definindo o modelo
-model = ConcreteModel()
 
+GHG_LIM = 1e8
+EV_IDLE_LIM = 1e8
+
+
+model = ConcreteModel()
 
 # Variable definition with contingency scenarios
 model.PEDS = Var(Ωt, Ωc, Ωs, domain=Reals, bounds=(data["EDS"]['Pmin'], data["EDS"]['Pmax']))  # Substation power
@@ -92,6 +95,10 @@ model.OPEX = Var(within=NonNegativeReals)  # Total OPEX
 
 # Number of charging stations
 model.NEVCS = Var(domain=NonNegativeReals)
+
+# Multi objective variables
+model.EVidle = Var(Ωev, Ωc, Ωs, within=NonNegativeReals)  # Total EV idle time
+model.GHG = Var(within=NonNegativeReals)  # Total GHG emissions
 
 def objective_rule(model):
     total_opex = 0
@@ -131,7 +138,6 @@ def opex_constraint_rule(model):
     return model.OPEX == eds_opex + bess_oem + ev_opex + tg_opex  + pv_oem + evcs_oem
 model.opex_constraint = Constraint(rule=opex_constraint_rule)
 
-
 # Update power balance constraint
 def power_balance_rule(model, t, c, s):
     pv = model.PPVmax * fs[s]['pv'][t]  # PV generation
@@ -141,6 +147,46 @@ def power_balance_rule(model, t, c, s):
         sum(model.PEV_c[ev, t, c, s] for ev in Ωev) + model.PBESS_c[t, c, s] + load
     )
 model.power_balance = Constraint(Ωt, Ωc, Ωs, rule=power_balance_rule)
+
+################################################################################
+##################### Multi objective constraints ##############################
+################################################################################
+
+def EV_idle_constraint_rule(model, ev, c, s):
+    # Convertendo os horários de chegada e saída para datetime
+    ta = datetime.strptime(EV[ev]['arrival'], "%H:%M")
+    td = datetime.strptime(EV[ev]['departure'], "%H:%M")
+    
+    if ta > td:
+        td += timedelta(days=1)  # Adicionamos um dia a td
+
+    idle_periods = (td - ta).total_seconds() / 60 / Δt  # Número de intervalos de tempo
+    return idle_periods - sum(model.αEV[ev, t, c, s] for t in Ωt) + 1 == model.EVidle[ev, c, s]
+model.EV_idle_constraint = Constraint(Ωev, Ωc, Ωs, rule=EV_idle_constraint_rule)
+
+
+def anual_GHG_constraint_rule(model):
+    eds_emission = 365 * sum(πc[c] * πs[s] * (
+        data["EDS"]["GHG"] * model.PEDSp[t, c, s] * (Δt / 60))
+        for t in Ωt for c in Ωc for s in Ωs
+    )
+    tg_emission = 365 * sum(πc[c] * πs[s] * (
+        data["TG"]["GHG"] * model.PTG[t, c, s] * (Δt / 60))
+        for t in Ωt for c in Ωc for s in Ωs
+    )
+    return model.GHG == eds_emission + tg_emission
+model.anual_GHG_constraint = Constraint(rule=anual_GHG_constraint_rule)
+
+
+def EV_idle_limit_constraint_rule(model, ev, c, s):
+    limit = EV_IDLE_LIM / Δt
+    return model.EVidle[ev, c, s] <= limit
+model.EV_idle_limit_constraint = Constraint(Ωev, Ωc, Ωs, rule=EV_idle_limit_constraint_rule)
+
+
+def GHG_limit_constraint_rule(model):
+    return model.GHG <= GHG_LIM
+model.GHG_limit_constraint = Constraint(rule=GHG_limit_constraint_rule)
 
 
 ################################################################################
@@ -364,13 +410,27 @@ for c in Ωc:
 print(f"Tempo de execução: {end - start:.2f} seconds")
 print("Resultados de Otimização:")
 if results.solver.status == SolverStatus.ok:
-    print(f"Total Energy Cost: {value(model.objective):.2f} units")
+    print(f"Total Cost: {value(model.objective):.2f} USD")
     print(f"Maximum Solar Generation Capacity (PPVmax): {model.PPVmax.value:.2f} kW")
     print(f"Maximum BESS Energy Capacity (EmaxBESS): {model.EmaxBESS.value:.2f} kWh")
     print(f"Maximum Thermal Generator Capacity (TG_MAX_CAP): {model.TG_MAX_CAP.value:.2f} kW")
     print(f"Number of EV Charging Stations (NEVCS): {model.NEVCS.value:.0f}")
+    print(f"Anual GHG Emissions: {model.GHG.value:.2f} kgCO2")
+    # faça um print de menor tempo ocioso em ingles
 else:
     print("Solution not found")
+
+
+idle_time_data = []
+for ev in EV.keys():
+    for s in Ωs:
+        for c in Ωc:
+            idle_time = model.EVidle[ev, c, s].value  # Assumindo que já foi resolvido
+            idle_time_data.append([ev, s, c, idle_time])
+
+df_idle_time = pd.DataFrame(idle_time_data, columns=["ev", "s", "c", "idle_time"])
+print(df_idle_time.to_string(index=False))
+
 
 # Garante que a pasta 'Results' exista (para evitar erro ao salvar)
 os.makedirs("Results", exist_ok=True)
