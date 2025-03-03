@@ -1,0 +1,29 @@
+{
+    "1": {
+        "arrival": "17:00",
+        "departure": "22:30",
+        "SoCini": 0.34,
+        "Emax": 40,
+        "eff": 0.95,
+        "Pmax_c": 30,
+        "Pmax_d": 10
+    },
+    "2": {
+        "arrival": "21:00",
+        "departure": "23:15",
+        "SoCini": 0.29,
+        "Emax": 40,
+        "eff": 0.95,
+        "Pmax_c": 35,
+        "Pmax_d": 15
+    },
+    "3": {
+        "arrival": "16:00",
+        "departure": "19:30",
+        "SoCini": 0.18,
+        "Emax": 45,
+        "eff": 0.95,
+        "Pmax_c": 35,
+        "Pmax_d": 10
+    }
+}

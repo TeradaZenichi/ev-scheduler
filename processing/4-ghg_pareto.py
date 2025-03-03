@@ -11,7 +11,14 @@ import json
 import re
 import os
 
-matplotlib.use('Agg')  # Use the 'Agg' backend for saving plots without needing Tkinte   
+matplotlib.use('Agg')  # Use the 'Agg' backend for saving plots without needing Tkinte
+import matplotlib as mpl
+mpl.rc('font', family='serif', serif='cmr10')
+plt.rcParams['axes.unicode_minus'] = False
+# plt.rcParams.update({'font.size':14})
+plt.rcParams["axes.formatter.use_mathtext"] = True
+
+
 folder = "data"
 
 
@@ -43,35 +50,37 @@ while t < datetime.strptime('23:59', "%H:%M"):
     t += timedelta(minutes=Δt)
 
 
+Ωc = [0] + data['off-grid']['set']  
 
-
+#define probabilities
+πc = {}
+for c in Ωc:
+    if c == 0:
+        πc[c] = 1 - data['off-grid']['prob']
+    else:
+        πc[c] = data['off-grid']['prob'] / len(data['off-grid']['set'])
 
 πs = {}
 for s in Ωs:
     πs[s] = fs[s]['prob']
 
+pareto = {}
 
-GHG_LIM = 1e8
+GHG_INITIAL = 37424.10469521367
 EV_IDLE_LIM = 1e8
 
-for i in range(-1, 96):
-    Ωc = [0] + data['off-grid']['set']
-    if i != -1:
-        tcurrent = datetime.strptime(Ωt[0], "%H:%M")
-        tcurrent += timedelta(minutes=i*Δt)
-        tcurrent = tcurrent.strftime("%H:%M")
-        data["off-grid"]["set"].append(tcurrent)
+for i in range(0, 100):
+    
+
+    if i == 0:
+        frac = 1
+        GHG_LIM = 1e8
+        EV_IDLE_LIM = 1e8
     else:
-        tcurrent = "0"
-
-    #define probabilities
-    πc = {}
-    for c in Ωc:
-        if c == 0:
-            πc[c] = 1 - data['off-grid']['prob']
-        else:
-            πc[c] = data['off-grid']['prob'] / len(data['off-grid']['set'])
-
+        frac = float(np.round(1 - 0.02*i, decimals=2))
+        GHG_LIM = GHG_INITIAL * frac
+        if GHG_LIM < 0:
+            break
 
     start = time.time()
 
@@ -100,6 +109,12 @@ for i in range(-1, 96):
 
     # PV variable
     model.PPVmax = Var(domain=NonNegativeReals)  # Maximum PV generation
+    model.PPV = Var(Ωt, Ωc, Ωs, domain=NonNegativeReals)  # PV generation
+    model.XPV = Var(Ωt, Ωc, Ωs, domain=Binary)  # PV shedding
+
+    # LOAD variable
+    model.PLOAD = Var(Ωt, Ωc, Ωs, domain=NonNegativeReals)  # Load
+    model.XLOAD = Var(Ωt, Ωc, Ωs, domain=Binary)  # Load shedding
 
     # Economic variables
     model.CAPEX = Var(within=NonNegativeReals)  # Total CAPEX
@@ -115,7 +130,7 @@ for i in range(-1, 96):
     def objective_rule(model):
         total_opex = 0
         for n in range(1, data["OPEX"]["years"] + 1):
-            total_opex += model.OPEX * ((1 + data["OPEX"]["rate"]) ** (n - 1))
+            total_opex += model.OPEX / ((1 + data["OPEX"]["rate"]) ** (n))
 
         return total_opex + model.CAPEX
     model.objective = Objective(rule=objective_rule, sense=minimize)
@@ -146,19 +161,48 @@ for i in range(-1, 96):
             data["BESS"]["discharging_cost"] * model.PBESS_d[t, c, s] * (Δt / 60))
             for t in Ωt for c in Ωc for s in Ωs
         )
+        
+        load_shedding = 365 * sum(πc[c] * πs[s] * (
+            data["LOAD"]["cost"] * model.XLOAD[t, c, s] * data["LOAD"]["Pmax"] * fs[s]['load'][t] * (Δt / 60))
+            for t in Ωt for c in Ωc for s in Ωs
+        )
         evcs_oem = data["EVCS"]["O&M"] * model.NEVCS * data["EVCS"]["CAPEX"]
-        return model.OPEX == eds_opex + bess_oem + ev_opex + tg_opex  + pv_oem + evcs_oem
+        return model.OPEX == eds_opex + bess_oem + ev_opex + tg_opex  + pv_oem + evcs_oem + load_shedding
     model.opex_constraint = Constraint(rule=opex_constraint_rule)
 
     # Update power balance constraint
     def power_balance_rule(model, t, c, s):
-        pv = model.PPVmax * fs[s]['pv'][t]  # PV generation
-        load = data["EDS"]["LOAD"] * fs[s]['load'][t]  # Demand
         return (
-            model.PEDS[t, c, s] + pv + sum(model.PEV_d[ev, t, c, s] for ev in Ωev) + model.PBESS_d[t, c, s] + model.PTG[t, c, s] ==
-            sum(model.PEV_c[ev, t, c, s] for ev in Ωev) + model.PBESS_c[t, c, s] + load
+            model.PEDS[t, c, s] + model.PPV[t, c, s] + sum(model.PEV_d[ev, t, c, s] for ev in Ωev) + model.PBESS_d[t, c, s] + model.PTG[t, c, s] ==
+            sum(model.PEV_c[ev, t, c, s] for ev in Ωev) + model.PBESS_c[t, c, s] + model.PLOAD[t, c, s]
         )
     model.power_balance = Constraint(Ωt, Ωc, Ωs, rule=power_balance_rule)
+
+
+    ################################################################################
+    ################################## PV constraints ##############################
+    ################################################################################
+
+    def pv_limit_rule_1(model, t, c, s):
+        return model.PPV[t, c, s] <= 1e6 * (1 - model.XPV[t, c, s])
+    model.pv_limit_1 = Constraint(Ωt, Ωc, Ωs, rule=pv_limit_rule_1)
+
+    def pv_limit_rule_2(model, t, c, s):
+        return model.PPV[t, c, s] <= model.PPVmax * fs[s]['pv'][t]
+    model.pv_limit_2 = Constraint(Ωt, Ωc, Ωs, rule=pv_limit_rule_2)
+
+    def pv_limit_rule_3(model, t, c, s):
+        return model.PPV[t, c, s] >= model.PPVmax * fs[s]['pv'][t] - 1e6 * model.XPV[t, c, s]
+    model.pv_limit_3 = Constraint(Ωt, Ωc, Ωs, rule=pv_limit_rule_3)
+
+    ################################################################################
+    ################################## LOAD constraints ############################
+    ################################################################################
+
+    def load_shedding_rule(model, t, c, s):
+        return model.PLOAD[t, c, s] == data["LOAD"]["Pmax"] * fs[s]['load'][t] * (1 - model.XLOAD[t, c, s])
+    model.load_shedding = Constraint(Ωt, Ωc, Ωs, rule=load_shedding_rule)
+
 
     ################################################################################
     ##################### Multi objective constraints ##############################
@@ -251,7 +295,7 @@ for i in range(-1, 96):
     def bess_energy_update_rule(model, t, c, s):
         t2 = datetime.strptime(t, "%H:%M").strftime("%H:%M")
         t1 = (datetime.strptime(t, "%H:%M") - timedelta(minutes=Δt)).strftime("%H:%M")
-        return model.EBESS[t2, c, s] == model.EBESS[t1, c, s] + ηBESS * model.PBESS_c[t2, c, s] * (Δt / 60) - model.PBESS_d[t2, c, s] * (ηBESS * Δt / 60)
+        return model.EBESS[t2, c, s] == model.EBESS[t1, c, s] + ηBESS * model.PBESS_c[t2, c, s] * (Δt / 60) - model.PBESS_d[t2, c, s] * (Δt / (60* ηBESS))
     model.bess_energy_update = Constraint(Ωt, Ωc, Ωs, rule=bess_energy_update_rule)
 
     def bess_charging_linearization_rule(model, t, c, s):
@@ -286,7 +330,9 @@ for i in range(-1, 96):
             return Constraint.Skip
     model.bess_offgrid = Constraint(Ωt, Ωc, Ωs, rule=bess_offgrid_rule)
 
-
+    def bess_initial_final_energy_rule(model, c, s):
+        return model.EBESS[Ωt[-1], c, s] == data["BESS"]["SoCini"] * model.EmaxBESS
+    model.bess_initial_final_energy = Constraint(Ωc, Ωs, rule=bess_initial_final_energy_rule)
 
     ################################################################################
     #########################   ALPHA constraints ###################################
@@ -346,9 +392,9 @@ for i in range(-1, 96):
         t1 = (datetime.strptime(t, "%H:%M") - timedelta(minutes=Δt)).strftime("%H:%M")
         ηEV = EV[ev]['eff']
         if ta < td and t0 > ta and t0 <= td:
-            return model.EEV[ev, t2, c, s] == model.EEV[ev, t1, c, s] + ηEV * model.PEV_c[ev, t2, c, s] * (Δt / 60) - model.PEV_d[ev, t2, c, s] * (ηEV * Δt / 60)
+            return model.EEV[ev, t2, c, s] == model.EEV[ev, t1, c, s] + ηEV * model.PEV_c[ev, t2, c, s] * (Δt / 60) - model.PEV_d[ev, t2, c, s] * (Δt /(60 * ηEV))
         elif ta > td and not (t0 > td and t0 <= ta):
-            return model.EEV[ev, t2, c, s] == model.EEV[ev, t1, c, s] + ηEV * model.PEV_c[ev, t2, c, s] * (Δt / 60) - model.PEV_d[ev, t2, c, s] * (ηEV * Δt / 60)
+            return model.EEV[ev, t2, c, s] == model.EEV[ev, t1, c, s] + ηEV * model.PEV_c[ev, t2, c, s] * (Δt / 60) - model.PEV_d[ev, t2, c, s] * (Δt / (60 * ηEV))
         elif t0 == ta:
             return model.EEV[ev, t, c, s] == EV[ev]['SoCini'] * EV[ev]['Emax']
         else:
@@ -396,29 +442,63 @@ for i in range(-1, 96):
         return model.EEV[ev, EV[ev]['departure'], c, s] == EV[ev]['Emax']
     model.EV_departure = Constraint(Ωev, Ωc, Ωs, rule=EV_departure_rule)
 
-
-
-    results = SolverFactory('gurobi').solve(model)
+    results = SolverFactory('gurobi').solve(model, options={'MIPGap': 0.1})
 
     end = time.time()
 
-    # import json file if exists
-    if os.path.exists(f'{folder}/contingency_results.json'):
-        with open(f'{folder}/contingency_results.json') as file:
-            results = json.load(file)
+    contingency_results = {}
+    for c in Ωc:
+        for s in Ωs:
+            contingency_results[(c,s)] = {
+                'EDS': [model.PEDS[t, c, s].value for t in Ωt],
+                'PV': [model.PPV[t, c, s].value for t in Ωt],
+                'PLOAD': [model.PLOAD[t, c, s].value for t in Ωt],
+                'PBESS_c': [model.PBESS_c[t, c, s].value for t in Ωt],
+                'PBESS_d': [model.PBESS_d[t, c, s].value for t in Ωt],
+                'PEV_c': [sum(model.PEV_c[ev, t, c, s].value for ev in Ωev) for t in Ωt],
+                'PEV_d': [sum(model.PEV_d[ev, t, c, s].value for ev in Ωev) for t in Ωt],
+                'PV': [model.PPVmax.value * fs[s]['pv'][t] for t in Ωt],
+                'Demand': [data["LOAD"]["Pmax"] * fs[s]['load'][t] for t in Ωt],
+                'PTG': [model.PTG[t, c, s].value for t in Ωt]  # Gerador térmico
+            }
+
+    folder = "Pareto"
+
+    if i == 0:
+        GHG_INITIAL = model.GHG.value
+        pareto[str(frac)] = {
+            "Objective": model.objective(),
+            'CAPEX': model.CAPEX.value,
+            'OPEX': model.OPEX.value,
+            'GHG': model.GHG.value,
+            'EVidle': sum(sum(sum(model.EVidle[ev, c, s].value for ev in Ωev) for c in Ωc) for s in Ωs),
+            'PPVmax': model.PPVmax.value,
+            'EmaxBESS': model.EmaxBESS.value,
+            'TG_MAX_CAP': model.TG_MAX_CAP.value,
+            'NEVCS': model.NEVCS.value,
+            'Total energy by V2G': sum(sum(πs[s] * πc[c] * model.PEV_d[ev, t, c, s].value for t in Ωt) for ev in Ωev for c in Ωc for s in Ωs),
+            'Time': end - start,
+            'TG usage': sum(sum(sum(model.PTG[t, c, s].value for t in Ωt) for c in Ωc) for s in Ωs),
+            'EDS usage': sum(sum(sum(model.PEDSp[t, c, s].value for t in Ωt) for c in Ωc) for s in Ωs)
+        }
     else:
-        results = {}
+       pareto[str(frac)] = {
+            "Objective": model.objective(),
+            'CAPEX': model.CAPEX.value,
+            'OPEX': model.OPEX.value,
+            'GHG': model.GHG.value,
+            'EVidle': sum(sum(sum(model.EVidle[ev, c, s].value for ev in Ωev) for c in Ωc) for s in Ωs),
+            'PPVmax': model.PPVmax.value,
+            'EmaxBESS': model.EmaxBESS.value,
+            'TG_MAX_CAP': model.TG_MAX_CAP.value,
+            'NEVCS': model.NEVCS.value,
+            'Total energy by V2G': sum(sum(πs[s] * πc[c] * model.PEV_d[ev, t, c, s].value for t in Ωt) for ev in Ωev for c in Ωc for s in Ωs),
+            'Time': end - start,
+            'TG usage': sum(sum(sum(model.PTG[t, c, s].value for t in Ωt) for c in Ωc) for s in Ωs),
+            'EDS usage': sum(sum(sum(model.PEDSp[t, c, s].value for t in Ωt) for c in Ωc) for s in Ωs)
+        }
 
-    results[len(data["off-grid"]["set"])] = {
-        "Total Time [s]": end - start,
-        "Total Cost [MUSD]": value(model.objective)/1e6,
-        "PPVmax [kW]": model.PPVmax.value,
-        "EmaxBESS [kWh]": model.EmaxBESS.value,
-        "TG_MAX_CAP [kW]": model.TG_MAX_CAP.value,
-        "NEVCS": model.NEVCS.value,
-        "GHG [kgCO2]": model.GHG.value,
-        "EV_IDLE_LIM": EV_IDLE_LIM,
-    }
+    with open(f'{folder}/ghg_pareto.json', 'w') as file:
+        json.dump(pareto, file, indent=4)
 
-    with open(f'{folder}/contingency_results.json', 'w') as file:
-        json.dump(results, file, indent=4)
+
