@@ -1,0 +1,470 @@
+{
+    "1": {
+        "arrival": "18:00",
+        "departure": "20:00",
+        "SoCini": 0.4,
+        "Emax": 40,
+        "eff": 0.95,
+        "Pmax_c": 25,
+        "Pmax_d": 10
+    },
+    "2": {
+        "arrival": "18:00",
+        "departure": "20:30",
+        "SoCini": 0.34,
+        "Emax": 35,
+        "eff": 0.95,
+        "Pmax_c": 20,
+        "Pmax_d": 10
+    },
+    "3": {
+        "arrival": "01:00",
+        "departure": "07:00",
+        "SoCini": 0.34,
+        "Emax": 40,
+        "eff": 0.95,
+        "Pmax_c": 35,
+        "Pmax_d": 10
+    },
+    "4": {
+        "arrival": "15:00",
+        "departure": "19:00",
+        "SoCini": 0.42,
+        "Emax": 35,
+        "eff": 0.95,
+        "Pmax_c": 25,
+        "Pmax_d": 15
+    },
+    "5": {
+        "arrival": "10:00",
+        "departure": "13:00",
+        "SoCini": 0.19,
+        "Emax": 45,
+        "eff": 0.95,
+        "Pmax_c": 20,
+        "Pmax_d": 10
+    },
+    "6": {
+        "arrival": "07:00",
+        "departure": "11:45",
+        "SoCini": 0.44,
+        "Emax": 45,
+        "eff": 0.95,
+        "Pmax_c": 20,
+        "Pmax_d": 15
+    },
+    "7": {
+        "arrival": "18:00",
+        "departure": "23:00",
+        "SoCini": 0.13,
+        "Emax": 45,
+        "eff": 0.95,
+        "Pmax_c": 30,
+        "Pmax_d": 10
+    },
+    "8": {
+        "arrival": "18:00",
+        "departure": "20:15",
+        "SoCini": 0.36,
+        "Emax": 45,
+        "eff": 0.95,
+        "Pmax_c": 20,
+        "Pmax_d": 10
+    },
+    "9": {
+        "arrival": "03:00",
+        "departure": "07:00",
+        "SoCini": 0.28,
+        "Emax": 45,
+        "eff": 0.95,
+        "Pmax_c": 25,
+        "Pmax_d": 15
+    },
+    "10": {
+        "arrival": "09:00",
+        "departure": "13:00",
+        "SoCini": 0.38,
+        "Emax": 35,
+        "eff": 0.95,
+        "Pmax_c": 25,
+        "Pmax_d": 10
+    },
+    "11": {
+        "arrival": "03:00",
+        "departure": "08:00",
+        "SoCini": 0.21,
+        "Emax": 40,
+        "eff": 0.95,
+        "Pmax_c": 30,
+        "Pmax_d": 10
+    },
+    "12": {
+        "arrival": "00:00",
+        "departure": "04:30",
+        "SoCini": 0.26,
+        "Emax": 35,
+        "eff": 0.95,
+        "Pmax_c": 25,
+        "Pmax_d": 15
+    },
+    "13": {
+        "arrival": "05:00",
+        "departure": "10:45",
+        "SoCini": 0.26,
+        "Emax": 50,
+        "eff": 0.95,
+        "Pmax_c": 25,
+        "Pmax_d": 15
+    },
+    "14": {
+        "arrival": "01:00",
+        "departure": "05:00",
+        "SoCini": 0.4,
+        "Emax": 50,
+        "eff": 0.95,
+        "Pmax_c": 35,
+        "Pmax_d": 15
+    },
+    "15": {
+        "arrival": "01:00",
+        "departure": "07:00",
+        "SoCini": 0.3,
+        "Emax": 35,
+        "eff": 0.95,
+        "Pmax_c": 20,
+        "Pmax_d": 10
+    },
+    "16": {
+        "arrival": "19:00",
+        "departure": "00:15",
+        "SoCini": 0.34,
+        "Emax": 50,
+        "eff": 0.95,
+        "Pmax_c": 35,
+        "Pmax_d": 15
+    },
+    "17": {
+        "arrival": "20:00",
+        "departure": "22:00",
+        "SoCini": 0.37,
+        "Emax": 35,
+        "eff": 0.95,
+        "Pmax_c": 30,
+        "Pmax_d": 15
+    },
+    "18": {
+        "arrival": "02:00",
+        "departure": "07:15",
+        "SoCini": 0.16,
+        "Emax": 35,
+        "eff": 0.95,
+        "Pmax_c": 30,
+        "Pmax_d": 10
+    },
+    "19": {
+        "arrival": "18:00",
+        "departure": "22:15",
+        "SoCini": 0.44,
+        "Emax": 40,
+        "eff": 0.95,
+        "Pmax_c": 25,
+        "Pmax_d": 15
+    },
+    "20": {
+        "arrival": "04:00",
+        "departure": "10:00",
+        "SoCini": 0.47,
+        "Emax": 45,
+        "eff": 0.95,
+        "Pmax_c": 35,
+        "Pmax_d": 10
+    },
+    "21": {
+        "arrival": "02:00",
+        "departure": "06:15",
+        "SoCini": 0.2,
+        "Emax": 40,
+        "eff": 0.95,
+        "Pmax_c": 20,
+        "Pmax_d": 10
+    },
+    "22": {
+        "arrival": "21:00",
+        "departure": "23:30",
+        "SoCini": 0.49,
+        "Emax": 40,
+        "eff": 0.95,
+        "Pmax_c": 25,
+        "Pmax_d": 15
+    },
+    "23": {
+        "arrival": "19:00",
+        "departure": "23:00",
+        "SoCini": 0.31,
+        "Emax": 50,
+        "eff": 0.95,
+        "Pmax_c": 25,
+        "Pmax_d": 10
+    },
+    "24": {
+        "arrival": "20:00",
+        "departure": "01:00",
+        "SoCini": 0.5,
+        "Emax": 45,
+        "eff": 0.95,
+        "Pmax_c": 35,
+        "Pmax_d": 15
+    },
+    "25": {
+        "arrival": "01:00",
+        "departure": "04:45",
+        "SoCini": 0.13,
+        "Emax": 35,
+        "eff": 0.95,
+        "Pmax_c": 25,
+        "Pmax_d": 10
+    },
+    "26": {
+        "arrival": "00:00",
+        "departure": "02:15",
+        "SoCini": 0.19,
+        "Emax": 35,
+        "eff": 0.95,
+        "Pmax_c": 30,
+        "Pmax_d": 10
+    },
+    "27": {
+        "arrival": "19:00",
+        "departure": "23:00",
+        "SoCini": 0.37,
+        "Emax": 40,
+        "eff": 0.95,
+        "Pmax_c": 25,
+        "Pmax_d": 15
+    },
+    "28": {
+        "arrival": "03:00",
+        "departure": "08:15",
+        "SoCini": 0.18,
+        "Emax": 35,
+        "eff": 0.95,
+        "Pmax_c": 35,
+        "Pmax_d": 15
+    },
+    "29": {
+        "arrival": "12:00",
+        "departure": "17:30",
+        "SoCini": 0.45,
+        "Emax": 35,
+        "eff": 0.95,
+        "Pmax_c": 20,
+        "Pmax_d": 10
+    },
+    "30": {
+        "arrival": "17:00",
+        "departure": "21:30",
+        "SoCini": 0.42,
+        "Emax": 35,
+        "eff": 0.95,
+        "Pmax_c": 25,
+        "Pmax_d": 10
+    },
+    "31": {
+        "arrival": "04:00",
+        "departure": "09:30",
+        "SoCini": 0.16,
+        "Emax": 40,
+        "eff": 0.95,
+        "Pmax_c": 30,
+        "Pmax_d": 15
+    },
+    "32": {
+        "arrival": "00:00",
+        "departure": "05:30",
+        "SoCini": 0.42,
+        "Emax": 35,
+        "eff": 0.95,
+        "Pmax_c": 20,
+        "Pmax_d": 10
+    },
+    "33": {
+        "arrival": "01:00",
+        "departure": "04:15",
+        "SoCini": 0.26,
+        "Emax": 50,
+        "eff": 0.95,
+        "Pmax_c": 25,
+        "Pmax_d": 15
+    },
+    "34": {
+        "arrival": "01:00",
+        "departure": "06:00",
+        "SoCini": 0.1,
+        "Emax": 50,
+        "eff": 0.95,
+        "Pmax_c": 30,
+        "Pmax_d": 15
+    },
+    "35": {
+        "arrival": "12:00",
+        "departure": "17:45",
+        "SoCini": 0.16,
+        "Emax": 45,
+        "eff": 0.95,
+        "Pmax_c": 25,
+        "Pmax_d": 10
+    },
+    "36": {
+        "arrival": "23:00",
+        "departure": "01:15",
+        "SoCini": 0.4,
+        "Emax": 35,
+        "eff": 0.95,
+        "Pmax_c": 20,
+        "Pmax_d": 15
+    },
+    "37": {
+        "arrival": "22:00",
+        "departure": "01:15",
+        "SoCini": 0.12,
+        "Emax": 35,
+        "eff": 0.95,
+        "Pmax_c": 25,
+        "Pmax_d": 10
+    },
+    "38": {
+        "arrival": "18:00",
+        "departure": "21:45",
+        "SoCini": 0.26,
+        "Emax": 40,
+        "eff": 0.95,
+        "Pmax_c": 20,
+        "Pmax_d": 10
+    },
+    "39": {
+        "arrival": "16:00",
+        "departure": "22:00",
+        "SoCini": 0.23,
+        "Emax": 45,
+        "eff": 0.95,
+        "Pmax_c": 25,
+        "Pmax_d": 15
+    },
+    "40": {
+        "arrival": "02:00",
+        "departure": "07:00",
+        "SoCini": 0.15,
+        "Emax": 45,
+        "eff": 0.95,
+        "Pmax_c": 35,
+        "Pmax_d": 15
+    },
+    "41": {
+        "arrival": "00:00",
+        "departure": "05:30",
+        "SoCini": 0.35,
+        "Emax": 35,
+        "eff": 0.95,
+        "Pmax_c": 20,
+        "Pmax_d": 10
+    },
+    "42": {
+        "arrival": "20:00",
+        "departure": "23:00",
+        "SoCini": 0.47,
+        "Emax": 35,
+        "eff": 0.95,
+        "Pmax_c": 25,
+        "Pmax_d": 15
+    },
+    "43": {
+        "arrival": "08:00",
+        "departure": "13:30",
+        "SoCini": 0.43,
+        "Emax": 45,
+        "eff": 0.95,
+        "Pmax_c": 20,
+        "Pmax_d": 15
+    },
+    "44": {
+        "arrival": "18:00",
+        "departure": "21:00",
+        "SoCini": 0.21,
+        "Emax": 35,
+        "eff": 0.95,
+        "Pmax_c": 25,
+        "Pmax_d": 15
+    },
+    "45": {
+        "arrival": "15:00",
+        "departure": "18:30",
+        "SoCini": 0.39,
+        "Emax": 40,
+        "eff": 0.95,
+        "Pmax_c": 30,
+        "Pmax_d": 15
+    },
+    "46": {
+        "arrival": "06:00",
+        "departure": "08:30",
+        "SoCini": 0.35,
+        "Emax": 45,
+        "eff": 0.95,
+        "Pmax_c": 20,
+        "Pmax_d": 10
+    },
+    "47": {
+        "arrival": "08:00",
+        "departure": "12:00",
+        "SoCini": 0.16,
+        "Emax": 50,
+        "eff": 0.95,
+        "Pmax_c": 35,
+        "Pmax_d": 10
+    },
+    "48": {
+        "arrival": "00:00",
+        "departure": "03:00",
+        "SoCini": 0.32,
+        "Emax": 45,
+        "eff": 0.95,
+        "Pmax_c": 25,
+        "Pmax_d": 15
+    },
+    "49": {
+        "arrival": "00:00",
+        "departure": "04:15",
+        "SoCini": 0.25,
+        "Emax": 35,
+        "eff": 0.95,
+        "Pmax_c": 30,
+        "Pmax_d": 10
+    },
+    "50": {
+        "arrival": "19:00",
+        "departure": "21:45",
+        "SoCini": 0.24,
+        "Emax": 50,
+        "eff": 0.95,
+        "Pmax_c": 25,
+        "Pmax_d": 10
+    },
+    "51": {
+        "arrival": "01:00",
+        "departure": "06:15",
+        "SoCini": 0.11,
+        "Emax": 45,
+        "eff": 0.95,
+        "Pmax_c": 35,
+        "Pmax_d": 10
+    },
+    "52": {
+        "arrival": "08:00",
+        "departure": "10:45",
+        "SoCini": 0.25,
+        "Emax": 35,
+        "eff": 0.95,
+        "Pmax_c": 35,
+        "Pmax_d": 10
+    }
+}

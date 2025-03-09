@@ -66,8 +66,8 @@ for s in Ωs:
     πs[s] = fs[s]['prob']
 
 
-GHG_LIM = 1e8
-EV_IDLE_LIM = 1e8
+GHG_LIM = 9912.413133647737
+EV_IDLE_LIM = 150
 
 
 model = ConcreteModel()
@@ -428,7 +428,7 @@ def EV_departure_rule(model, ev, c, s):
     return model.EEV[ev, EV[ev]['departure'], c, s] == EV[ev]['Emax']
 model.EV_departure = Constraint(Ωev, Ωc, Ωs, rule=EV_departure_rule)
 
-results = SolverFactory('gurobi').solve(model)
+results = SolverFactory('gurobi').solve(model, options={'MIPGap': 0.1})
 
 end = time.time()
 
@@ -558,7 +558,7 @@ for c in Ωc:
 
         ax.set_xticks(tick_positions)
         ax.set_xticklabels(tick_labels, rotation=45, ha='right')  
-        ax.set_ylim(-30, 155)
+        ax.set_ylim(-200, 200)
         plt.tight_layout()
         plt.savefig(f"Results/Contingency_{safe_c}_Scenario_{safe_s}_Power_Graph.pdf", dpi=300)
         plt.close()
@@ -627,14 +627,16 @@ for c in Ωc:
                 soc_val = df_combined.loc[t_str, col]  # SoC
                 
                 if col == 'BESS':
-                    df_annotations.loc[t_str, col] = f"{soc_val*100:.1f}%"
+                    # df_annotations.loc[t_str, col] = f"{soc_val*100:.1f}%"
+                    df_annotations.loc[t_str, col] = f"{soc_val:.2f}"
                 else:
                     alpha_val = df_ev_alpha.loc[t_str, col]
                     arr_t = arrival_time[col]
                     dep_t = departure_time[col]
 
                     if is_ev_present(t_time, arr_t, dep_t):
-                        df_annotations.loc[t_str, col] = f"{soc_val*100:.1f}% - {int(alpha_val)}"
+                        # df_annotations.loc[t_str, col] = f"{soc_val*100:.1f}% - {int(alpha_val)}"
+                        df_annotations.loc[t_str, col] = f"{int(alpha_val)}"
                     else:
                         df_annotations.loc[t_str, col] = ""
 
@@ -650,7 +652,7 @@ for c in Ωc:
             cbar_kws={'label': 'State of Charge (SoC)'},
             annot=df_annotations.T,
             fmt="",
-            annot_kws={'size': 3, 'rotation': 90},  # Fonte menor e rotação
+            annot_kws={'size': 5, 'rotation': 0},  # Fonte menor e rotação
             ax=ax
         )
 

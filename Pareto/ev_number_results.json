@@ -1,0 +1,532 @@
+{
+    "0": {
+        "Total Time [s]": 88.84488606452942,
+        "Total Cost [MUSD]": 0.07615648852976753,
+        "PPVmax [kW]": 16.662394257882735,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 19.14893617021277,
+        "NEVCS": 0.0,
+        "GHG [kgCO2]": 14616.376228479581,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "1": {
+        "Total Time [s]": 42.85228180885315,
+        "Total Cost [MUSD]": 0.1356330524596652,
+        "PPVmax [kW]": 16.521858110419373,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 31.147656117786426,
+        "NEVCS": 1.0,
+        "GHG [kgCO2]": 22004.26541108868,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "2": {
+        "Total Time [s]": 59.99309706687927,
+        "Total Cost [MUSD]": 0.19294086860772947,
+        "PPVmax [kW]": 16.662394257882614,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 38.304918441964944,
+        "NEVCS": 2.0,
+        "GHG [kgCO2]": 29090.175007629696,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "3": {
+        "Total Time [s]": 74.27602863311768,
+        "Total Cost [MUSD]": 0.201514334818466,
+        "PPVmax [kW]": 16.382978723404275,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 38.306175811870105,
+        "NEVCS": 2.0,
+        "GHG [kgCO2]": 30106.1495173398,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "4": {
+        "Total Time [s]": 82.86679792404175,
+        "Total Cost [MUSD]": 0.2080294959354408,
+        "PPVmax [kW]": 16.89297551594573,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 38.30388082630363,
+        "NEVCS": 2.0,
+        "GHG [kgCO2]": 30822.417575976728,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "5": {
+        "Total Time [s]": 111.47857856750488,
+        "Total Cost [MUSD]": 0.2134151002820904,
+        "PPVmax [kW]": 24.89109672082418,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 38.26788928088172,
+        "NEVCS": 2.0,
+        "GHG [kgCO2]": 30586.49377614208,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "6": {
+        "Total Time [s]": 36.28654623031616,
+        "Total Cost [MUSD]": 0.2155666488410178,
+        "PPVmax [kW]": 30.300534824025394,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 38.24354680941732,
+        "NEVCS": 2.0,
+        "GHG [kgCO2]": 30246.101505280167,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "7": {
+        "Total Time [s]": 50.905455589294434,
+        "Total Cost [MUSD]": 0.22740049913397106,
+        "PPVmax [kW]": 30.300534824025398,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 38.24354680941732,
+        "NEVCS": 2.0,
+        "GHG [kgCO2]": 30514.1927840987,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "8": {
+        "Total Time [s]": 44.3702347278595,
+        "Total Cost [MUSD]": 0.2908302097413269,
+        "PPVmax [kW]": 30.300534824025398,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 50.90144154625941,
+        "NEVCS": 3.0,
+        "GHG [kgCO2]": 39366.32377176951,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "9": {
+        "Total Time [s]": 48.05858659744263,
+        "Total Cost [MUSD]": 0.3014261160440375,
+        "PPVmax [kW]": 30.300534824025398,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 50.90144154625942,
+        "NEVCS": 3.0,
+        "GHG [kgCO2]": 40635.75326514857,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "10": {
+        "Total Time [s]": 48.16218638420105,
+        "Total Cost [MUSD]": 0.3048172058698978,
+        "PPVmax [kW]": 35.01243318157508,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 50.880238003650135,
+        "NEVCS": 3.0,
+        "GHG [kgCO2]": 40535.86159025337,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "11": {
+        "Total Time [s]": 52.749444007873535,
+        "Total Cost [MUSD]": 0.31256762269384414,
+        "PPVmax [kW]": 36.5640637380319,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 50.87325566614639,
+        "NEVCS": 3.0,
+        "GHG [kgCO2]": 41140.41988661172,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "12": {
+        "Total Time [s]": 58.88891792297363,
+        "Total Cost [MUSD]": 0.32102596651423465,
+        "PPVmax [kW]": 36.564063738031884,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 50.87325566614639,
+        "NEVCS": 3.0,
+        "GHG [kgCO2]": 42139.48173882554,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "13": {
+        "Total Time [s]": 101.21942925453186,
+        "Total Cost [MUSD]": 0.326792459169211,
+        "PPVmax [kW]": 45.37967451690288,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 50.833585417641416,
+        "NEVCS": 3.0,
+        "GHG [kgCO2]": 41897.39459684558,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "14": {
+        "Total Time [s]": 188.6376748085022,
+        "Total Cost [MUSD]": 0.33660713385344854,
+        "PPVmax [kW]": 45.379674516903,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 50.833585417641466,
+        "NEVCS": 3.0,
+        "GHG [kgCO2]": 43073.5552548914,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "15": {
+        "Total Time [s]": 194.39261293411255,
+        "Total Cost [MUSD]": 0.3811553300236866,
+        "PPVmax [kW]": 44.90275420963321,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 49.12393632669763,
+        "NEVCS": 4.0,
+        "GHG [kgCO2]": 44084.93400071675,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "16": {
+        "Total Time [s]": 159.21829962730408,
+        "Total Cost [MUSD]": 0.3867207282467133,
+        "PPVmax [kW]": 45.37967451690303,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 43.333585417641466,
+        "NEVCS": 4.0,
+        "GHG [kgCO2]": 41278.31009807117,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "17": {
+        "Total Time [s]": 173.3579020500183,
+        "Total Cost [MUSD]": 0.393745610602324,
+        "PPVmax [kW]": 45.37967451690301,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 43.552814560250674,
+        "NEVCS": 4.0,
+        "GHG [kgCO2]": 41792.43102670389,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "18": {
+        "Total Time [s]": 256.69323992729187,
+        "Total Cost [MUSD]": 0.4401796541877357,
+        "PPVmax [kW]": 45.37967451690301,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 43.55281456025066,
+        "NEVCS": 5.0,
+        "GHG [kgCO2]": 42832.92445347783,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "19": {
+        "Total Time [s]": 194.85356044769287,
+        "Total Cost [MUSD]": 0.45159212102686874,
+        "PPVmax [kW]": 45.37967451690302,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 49.638600649790106,
+        "NEVCS": 5.0,
+        "GHG [kgCO2]": 46303.460942392485,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "20": {
+        "Total Time [s]": 299.2930474281311,
+        "Total Cost [MUSD]": 0.45628466343099056,
+        "PPVmax [kW]": 50.06843349508524,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 49.63672514619883,
+        "NEVCS": 5.0,
+        "GHG [kgCO2]": 46387.2368218936,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "21": {
+        "Total Time [s]": 220.40337538719177,
+        "Total Cost [MUSD]": 0.46679563178090017,
+        "PPVmax [kW]": 50.06843349508524,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 49.63672514619884,
+        "NEVCS": 5.0,
+        "GHG [kgCO2]": 47653.07241803888,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "22": {
+        "Total Time [s]": 252.02459001541138,
+        "Total Cost [MUSD]": 0.4724078815425514,
+        "PPVmax [kW]": 50.06843349508522,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 60.73656215005604,
+        "NEVCS": 5.0,
+        "GHG [kgCO2]": 43235.40658051799,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "23": {
+        "Total Time [s]": 448.77351474761963,
+        "Total Cost [MUSD]": 0.48833269414507813,
+        "PPVmax [kW]": 50.06843349508524,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 71.0259984070998,
+        "NEVCS": 5.0,
+        "GHG [kgCO2]": 46352.53588846333,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "24": {
+        "Total Time [s]": 1142.1671888828278,
+        "Total Cost [MUSD]": 0.49393848279840546,
+        "PPVmax [kW]": 50.068433495085245,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 53.26651735722262,
+        "NEVCS": 5.0,
+        "GHG [kgCO2]": 51440.83757017975,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "25": {
+        "Total Time [s]": 1110.6165447235107,
+        "Total Cost [MUSD]": 0.5038998953122397,
+        "PPVmax [kW]": 50.06843349508524,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 53.26651735722286,
+        "NEVCS": 5.0,
+        "GHG [kgCO2]": 52635.42168017469,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "26": {
+        "Total Time [s]": 1313.2067384719849,
+        "Total Cost [MUSD]": 0.5132174298015969,
+        "PPVmax [kW]": 50.06843349508524,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 53.26651735722262,
+        "NEVCS": 5.0,
+        "GHG [kgCO2]": 53747.45834528239,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "27": {
+        "Total Time [s]": 1317.4885523319244,
+        "Total Cost [MUSD]": 0.5278358735822691,
+        "PPVmax [kW]": 50.068433495085245,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 75.92077267637171,
+        "NEVCS": 5.0,
+        "GHG [kgCO2]": 54146.97788517538,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "28": {
+        "Total Time [s]": 1014.9325547218323,
+        "Total Cost [MUSD]": 0.5364925809829066,
+        "PPVmax [kW]": 51.30567471856734,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 75.9207726763717,
+        "NEVCS": 5.0,
+        "GHG [kgCO2]": 55053.10606403309,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "29": {
+        "Total Time [s]": 310.85189843177795,
+        "Total Cost [MUSD]": 0.5349077708989688,
+        "PPVmax [kW]": 54.381484596040124,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 75.92077267637175,
+        "NEVCS": 5.0,
+        "GHG [kgCO2]": 54378.07405945888,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "30": {
+        "Total Time [s]": 224.65543675422668,
+        "Total Cost [MUSD]": 0.5419432120612242,
+        "PPVmax [kW]": 54.38148459604011,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 75.92077267637175,
+        "NEVCS": 5.0,
+        "GHG [kgCO2]": 55679.12065300139,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "31": {
+        "Total Time [s]": 270.33465576171875,
+        "Total Cost [MUSD]": 0.549803902160475,
+        "PPVmax [kW]": 59.4917497453413,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 75.92077267637175,
+        "NEVCS": 5.0,
+        "GHG [kgCO2]": 56114.25076215493,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "32": {
+        "Total Time [s]": 219.15010690689087,
+        "Total Cost [MUSD]": 0.5565921374272119,
+        "PPVmax [kW]": 58.426207362377575,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 75.92077267637175,
+        "NEVCS": 5.0,
+        "GHG [kgCO2]": 57087.62712783185,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "33": {
+        "Total Time [s]": 390.44791078567505,
+        "Total Cost [MUSD]": 0.5686996481146724,
+        "PPVmax [kW]": 59.242123555843705,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 75.92077267637129,
+        "NEVCS": 5.0,
+        "GHG [kgCO2]": 58448.318467232086,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "34": {
+        "Total Time [s]": 531.5573019981384,
+        "Total Cost [MUSD]": 0.5836473944930731,
+        "PPVmax [kW]": 59.49174974534088,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 75.92077267637173,
+        "NEVCS": 5.0,
+        "GHG [kgCO2]": 60323.96250383924,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "35": {
+        "Total Time [s]": 289.5016770362854,
+        "Total Cost [MUSD]": 0.5858053906823782,
+        "PPVmax [kW]": 66.02956024980423,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 75.92077267637175,
+        "NEVCS": 5.0,
+        "GHG [kgCO2]": 59971.81064813052,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "36": {
+        "Total Time [s]": 151.63834762573242,
+        "Total Cost [MUSD]": 0.592732242269754,
+        "PPVmax [kW]": 64.28760752752947,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 75.92077267637175,
+        "NEVCS": 5.0,
+        "GHG [kgCO2]": 60978.51342165687,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "37": {
+        "Total Time [s]": 272.743070602417,
+        "Total Cost [MUSD]": 0.6028211148938835,
+        "PPVmax [kW]": 66.02956024980422,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 75.92077267637175,
+        "NEVCS": 5.0,
+        "GHG [kgCO2]": 62023.49024337137,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "38": {
+        "Total Time [s]": 160.28734183311462,
+        "Total Cost [MUSD]": 0.6213502457323168,
+        "PPVmax [kW]": 66.02956024980422,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 86.72191116088051,
+        "NEVCS": 5.0,
+        "GHG [kgCO2]": 66848.6823965421,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "39": {
+        "Total Time [s]": 948.2233300209045,
+        "Total Cost [MUSD]": 0.6668301445224312,
+        "PPVmax [kW]": 67.98735965336914,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 84.22191116088092,
+        "NEVCS": 6.0,
+        "GHG [kgCO2]": 67098.02951646564,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "40": {
+        "Total Time [s]": 352.9978075027466,
+        "Total Cost [MUSD]": 0.6795509276700772,
+        "PPVmax [kW]": 67.61229314420804,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 84.22191116088052,
+        "NEVCS": 6.0,
+        "GHG [kgCO2]": 68768.2419394922,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "41": {
+        "Total Time [s]": 185.56031823158264,
+        "Total Cost [MUSD]": 0.6871869645180181,
+        "PPVmax [kW]": 67.98735965336752,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 84.22191116088052,
+        "NEVCS": 6.0,
+        "GHG [kgCO2]": 69731.07501322757,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "42": {
+        "Total Time [s]": 175.31638026237488,
+        "Total Cost [MUSD]": 0.6948997430618891,
+        "PPVmax [kW]": 67.61229314420801,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 100.64893617021234,
+        "NEVCS": 6.0,
+        "GHG [kgCO2]": 66532.30357425072,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "43": {
+        "Total Time [s]": 158.29730916023254,
+        "Total Cost [MUSD]": 0.6973120373135148,
+        "PPVmax [kW]": 67.61229314420804,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 100.6489361702123,
+        "NEVCS": 6.0,
+        "GHG [kgCO2]": 66825.0456395519,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "44": {
+        "Total Time [s]": 166.72137260437012,
+        "Total Cost [MUSD]": 0.7176745841997743,
+        "PPVmax [kW]": 67.61229314420805,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 100.64893617021228,
+        "NEVCS": 6.0,
+        "GHG [kgCO2]": 75339.8351201486,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "45": {
+        "Total Time [s]": 214.68583369255066,
+        "Total Cost [MUSD]": 0.72482163321035,
+        "PPVmax [kW]": 74.90967865138292,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 100.6489361702123,
+        "NEVCS": 6.0,
+        "GHG [kgCO2]": 75398.15134813444,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "46": {
+        "Total Time [s]": 1239.0718986988068,
+        "Total Cost [MUSD]": 0.765915324748791,
+        "PPVmax [kW]": 78.47250478817803,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 100.64893617021276,
+        "NEVCS": 7.0,
+        "GHG [kgCO2]": 70838.97729704087,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "47": {
+        "Total Time [s]": 2071.0667247772217,
+        "Total Cost [MUSD]": 0.7698020212420756,
+        "PPVmax [kW]": 88.2832077065812,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 100.64893617021276,
+        "NEVCS": 7.0,
+        "GHG [kgCO2]": 70125.62666366712,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "48": {
+        "Total Time [s]": 2203.7054805755615,
+        "Total Cost [MUSD]": 0.7797924563214914,
+        "PPVmax [kW]": 86.93766415267105,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 100.6489361702128,
+        "NEVCS": 7.0,
+        "GHG [kgCO2]": 71471.97630539456,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "49": {
+        "Total Time [s]": 3820.901262283325,
+        "Total Cost [MUSD]": 0.7884072870677322,
+        "PPVmax [kW]": 88.28320770658128,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 100.64893617021276,
+        "NEVCS": 7.0,
+        "GHG [kgCO2]": 72335.08027284255,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "50": {
+        "Total Time [s]": 716.9872899055481,
+        "Total Cost [MUSD]": 0.8158315754938774,
+        "PPVmax [kW]": 86.9376641526711,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 106.06629339305657,
+        "NEVCS": 7.0,
+        "GHG [kgCO2]": 85780.86653826447,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "51": {
+        "Total Time [s]": 543.4944813251495,
+        "Total Cost [MUSD]": 0.8291385776676172,
+        "PPVmax [kW]": 85.20084067348338,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 106.06629339305664,
+        "NEVCS": 7.0,
+        "GHG [kgCO2]": 87686.38165142434,
+        "EV_IDLE_LIM": 100000000.0
+    },
+    "52": {
+        "Total Time [s]": 1254.8590383529663,
+        "Total Cost [MUSD]": 0.8320845609859723,
+        "PPVmax [kW]": 92.64836991879716,
+        "EmaxBESS [kWh]": 0.0,
+        "TG_MAX_CAP [kW]": 106.06629339305614,
+        "NEVCS": 7.0,
+        "GHG [kgCO2]": 87150.03653727127,
+        "EV_IDLE_LIM": 100000000.0
+    }
+}
