@@ -2,11 +2,36 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 
+from matplotlib import font_manager
+import matplotlib
 
+font_path = 'Gulliver.otf'  # Your font path goes here
+font_manager.fontManager.addfont(font_path)
+prop = font_manager.FontProperties(fname=font_path)
+
+plt.rcParams['font.family'] = 'Gulliver'
+plt.rcParams['font.sans-serif'] = prop.get_name()
+
+plt.rcParams.update({
+    "font.size": 10,  # Tamanho de fonte recomendado para artigos científicos (8-12 pt)
+    "axes.labelsize": 10,  # Tamanho dos rótulos dos eixos
+    "axes.titlesize": 10,  # Tamanho do título
+    "xtick.labelsize": 10,  # Tamanho dos ticks do eixo X
+    "ytick.labelsize": 10,  # Tamanho dos ticks do eixo Y
+    "legend.fontsize": 10,  # Tamanho da legenda
+})
+
+# Escolha um tamanho da tabela (em mm)
+fig_width_mm = 90 * 2   # Exemplo: 90 mm para Single Column
+fig_height_mm = 60 * 2  # Defina a altura manualmente
+
+# Converter mm para polegadas
+fig_width_inch = fig_width_mm / 25.4
+fig_height_inch = fig_height_mm / 25.4
 
 
 # Load the JSON data
-with open('Pareto/evaluations.json', 'r') as f:
+with open('Pareto/3-evaluations.json', 'r') as f:
     data = json.load(f)
 
 # Initialize lists for prices, total costs, and V2G energy
@@ -58,31 +83,28 @@ print("Utility (Usage):", utility_usage[max_index])
 # ---------------------------------------------------
 # 3. Plotting the Results in Two Separate Figures
 # ---------------------------------------------------
+fig = matplotlib.pyplot.gcf()
+fig.set_size_inches(fig_width_inch, fig_height_inch)
+
 
 # Plot 1: Effective V2G Usage vs Price
-plt.figure(figsize=(10.5, 7.5))
-
-plt.rcParams["font.family"] = "Times New Roman"
-plt.rcParams['axes.unicode_minus'] = False
-plt.rcParams.update({'font.size':12})
+plt.figure(figsize=(fig_width_inch, fig_height_inch))
 
 plt.plot(prices, effective_energy, marker='o', linestyle='-', color='blue', label='Effective V2G Usage')
 plt.xlabel('Price (USD)')
-plt.ylabel('Effective V2G Usage')
+plt.ylabel('Effective V2G Usage [kWh]')
 plt.title('Effective V2G Usage vs Price')
 plt.legend()
 plt.grid(True)
 plt.tight_layout()
-plt.savefig("Pareto/evaluations.pdf")
+plt.savefig("Pareto/c-evaluations.pdf")
 plt.close("all")
 
 
 # Plot 2: Normalized Utilities and Nash Product vs Price
-plt.figure(figsize=(10.5, 7.5))
+plt.figure(figsize=(fig_width_inch, fig_height_inch))
 
-plt.rcParams["font.family"] = "Times New Roman"
-plt.rcParams['axes.unicode_minus'] = False
-plt.rcParams.update({'font.size':12})
+
 plt.plot(prices, utility_compensation, marker='s', linestyle='--', label='Compensation Utility')
 plt.plot(prices, utility_usage, marker='^', linestyle='--', label='Usage Utility')
 plt.plot(prices, nash_product, marker='o', linestyle='-', color='red', label='Nash Product')
@@ -94,4 +116,4 @@ plt.title('Normalized Utilities and Nash Product vs Price')
 plt.legend()
 plt.grid(True)
 plt.tight_layout()
-plt.savefig("Pareto/nash_product.pdf")
+plt.savefig("Pareto/c-nash_product.pdf")

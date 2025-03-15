@@ -1,16 +1,12 @@
 import json
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 
-# Configuração de fontes e aparência dos gráficos
-mpl.rc('font', family='serif', serif='cmr10')
-plt.rcParams.update({
-    'axes.unicode_minus': False,
-    'font.size': 14
-})
+plt.rcParams["font.family"] = "Times New Roman"
+plt.rcParams['axes.unicode_minus'] = False
+plt.rcParams.update({'font.size':10})
 
 # Caminho do arquivo JSON
-file_path = "Pareto/evaluations.json"
+file_path = "Pareto/3-evaluations.json"
 
 # Carregar os dados do JSON
 with open(file_path, "r") as file:
@@ -21,7 +17,8 @@ x_values = list(map(float, data.keys()))
 y_values_left = [entry["Total energy by V2G"] for entry in data.values()]
 
 # Configuração da figura e do eixo
-fig, ax1 = plt.subplots(figsize=(6, 4))  # Tamanho adequado para meia coluna
+fig, ax1 = plt.subplots(figsize=(10.5, 7.5))  # 
+
 
 # Personalização do eixo y (esquerda)
 ax1.set_xlabel("V2G usage cost [USD/kWh]")
