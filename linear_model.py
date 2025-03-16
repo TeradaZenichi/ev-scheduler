@@ -428,7 +428,7 @@ def EV_departure_rule(model, ev, c, s):
     return model.EEV[ev, EV[ev]['departure'], c, s] == EV[ev]['Emax']
 model.EV_departure = Constraint(Ωev, Ωc, Ωs, rule=EV_departure_rule)
 
-results = SolverFactory('gurobi').solve(model, options={'MIPGap': 0.1})
+results = SolverFactory('gurobi').solve(model, options={'MIPGap': 0.01})
 
 end = time.time()
 
@@ -574,7 +574,7 @@ for c in Ωc:
         PTG_values = contingency_results[(c,s)]['PTG']
         
         net_BESS_power = [PBESS_c_values[t_idx] - PBESS_d_values[t_idx] for t_idx in range(len(Ωt))]
-        discharging = [-1*PBESS_d_values[t_idx] for t_idx in range(len(Ωt))]
+        discharging = [-1 * PBESS_d_values[t_idx] for t_idx in range(len(Ωt))]
         PTG_values = [-1 * PTG_values[t_idx] for t_idx in range(len(Ωt))]
         PEV_d_values = [-1 * PEV_d_values[t_idx] for t_idx in range(len(Ωt))]
 
@@ -591,13 +591,15 @@ for c in Ωc:
             ax.plot(Ωt, PTG_values, label='Thermal Generator Power', color=colors['Thermal Generator'], linewidth=2)
         if model.EmaxBESS.value > 0:
             ax.bar(Ωt, net_BESS_power, color=colors['Net BESS Power'], alpha=0.5,
-                label='Net BESS Power (BESSc - BESSd)')
-        ax.set_title(f"Operational Power - Contingency {c} - Scenario {s}", 
-                    fontsize=14, fontweight='bold')
+                   label='Net BESS Power (BESSc - BESSd)')
+        
+        # Removemos o título e definimos os rótulos dos eixos
         ax.set_xlabel("Timestamp", fontsize=12)
         ax.set_ylabel("Power (kW)", fontsize=12)
         ax.grid(True, which='both', linestyle=':', color='lightgray')
-        ax.legend(loc='upper left', fontsize=10, frameon=True)
+        
+        # Posiciona a legenda acima do gráfico
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.30), ncol=3, fontsize=10, frameon=True)
 
         num_ticks = 10  
         tick_positions = list(range(0, len(Ωt), max(1, len(Ωt) // num_ticks)))  
@@ -606,9 +608,14 @@ for c in Ωc:
         ax.set_xticks(tick_positions)
         ax.set_xticklabels(tick_labels, rotation=45, ha='right')  
         ax.set_ylim(-200, 200)
+        
+        # Usa tight_layout e salva a figura com bbox_inches='tight' para remover espaços em branco
         plt.tight_layout()
-        plt.savefig(f"Results/Contingency_{safe_c}_Scenario_{safe_s}_Power_Graph.pdf", dpi=300)
+        plt.savefig(f"Results/Contingency_{safe_c}_Scenario_{safe_s}_Power_Graph.pdf",
+                    dpi=300, bbox_inches='tight', pad_inches=0.1)
         plt.close()
+
+
 
 
 # ==========================================
@@ -725,5 +732,5 @@ for c in Ωc:
 
         plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.15)  # Ajuste das margens
         plt.gcf().set_constrained_layout(True)
-        plt.savefig(f"Results/Contingency_{safe_c}_Scenario_{safe_s}_SoC_Heatmap.pdf", dpi=300, bbox_inches='tight', pad_inches=0)
+        plt.savefig(f"Results/Heatmap_{safe_c}_Scenario_{safe_s}_SoC_Heatmap.pdf", dpi=300, bbox_inches='tight', pad_inches=0)
         plt.close()
