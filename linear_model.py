@@ -507,6 +507,53 @@ colors = {
     'Thermal Generator': 'red'
 }
 
+from matplotlib import font_manager
+
+font_path = 'Gulliver.otf'  # Caminho para sua fonte personalizada
+font_manager.fontManager.addfont(font_path)
+prop = font_manager.FontProperties(fname=font_path)
+
+# Define a família de fontes com fallback para DejaVu Sans
+plt.rcParams['font.family'] = ['Gulliver', 'DejaVu Sans']
+plt.rcParams['font.sans-serif'] = [prop.get_name(), 'DejaVu Sans']
+
+
+
+# Ajuste recomendado para exportação em PDF/PS (mantém os vetores dos glifos)
+plt.rcParams['pdf.fonttype'] = 42
+plt.rcParams['ps.fonttype'] = 42
+
+plt.rcParams['mathtext.default'] = 'regular'
+plt.rcParams['mathtext.fontset'] = 'dejavusans'
+
+plt.rcParams['mathtext.rm'] = 'DejaVu Sans'
+plt.rcParams['mathtext.it'] = 'DejaVu Sans'
+plt.rcParams['mathtext.bf'] = 'DejaVu Sans'
+plt.rcParams['axes.formatter.use_mathtext'] = False
+
+
+# Caso queira usar o sinal de menos em forma ASCII (para evitar problemas com o glifo)
+plt.rcParams["axes.unicode_minus"] = False
+
+plt.rcParams.update({
+    "font.size": 10,        # Tamanho de fonte recomendado para artigos científicos (8-12 pt)
+    "axes.labelsize": 10,     # Tamanho dos rótulos dos eixos
+    "axes.titlesize": 10,     # Tamanho do título
+    "xtick.labelsize": 10,    # Tamanho dos ticks do eixo X
+    "ytick.labelsize": 10,    # Tamanho dos ticks do eixo Y
+    "legend.fontsize": 10,    # Tamanho da legenda
+})
+plt.rcParams["axes.unicode_minus"] = False
+
+
+
+# Escolha um tamanho da tabela (em mm)
+fig_width_mm = 90 * 2   # Exemplo: 90 mm para Single Column
+fig_height_mm = 60 * 2  # Defina a altura manualmente
+
+# Converter mm para polegadas
+fig_width_inch = fig_width_mm / 25.4
+fig_height_inch = fig_height_mm / 25.4
 
 
 for c in Ωc:
@@ -531,7 +578,7 @@ for c in Ωc:
         PTG_values = [-1 * PTG_values[t_idx] for t_idx in range(len(Ωt))]
         PEV_d_values = [-1 * PEV_d_values[t_idx] for t_idx in range(len(Ωt))]
 
-        plt.figure(figsize=(10, 6))
+        plt.figure(figsize=(fig_width_inch, fig_height_inch))
         ax = plt.gca()
         
         ax.plot(Ωt, EDS_values, label='EDS Power', color=colors['Substation'], linewidth=2)
@@ -585,6 +632,14 @@ colorscale = [
 ]
 cmap_custom = LinearSegmentedColormap.from_list('CustomSoC', colorscale)
 
+# Escolha um tamanho da tabela (em mm)
+fig_width_mm = 190 * 2   # Exemplo: 90 mm para Single Column
+fig_height_mm = 80 * 2  # Defina a altura manualmente
+
+# Converter mm para polegadas
+fig_width_inch = fig_width_mm / 25.4
+fig_height_inch = fig_height_mm / 25.4
+
 for c in Ωc:
     for s in Ωs:
         safe_c = re.sub(r'[^a-zA-Z0-9_]+', '_', str(c))
@@ -628,7 +683,8 @@ for c in Ωc:
                 
                 if col == 'BESS':
                     # df_annotations.loc[t_str, col] = f"{soc_val*100:.1f}%"
-                    df_annotations.loc[t_str, col] = f"{soc_val:.2f}"
+                    #df_annotations.loc[t_str, col] = f"{soc_val:.2f}"
+                    df_annotations.loc[t_str, col] = ""
                 else:
                     alpha_val = df_ev_alpha.loc[t_str, col]
                     arr_t = arrival_time[col]
@@ -640,7 +696,7 @@ for c in Ωc:
                     else:
                         df_annotations.loc[t_str, col] = ""
 
-        plt.figure(figsize=(12, 6))
+        plt.figure(figsize=(fig_width_inch, fig_height_inch))
         ax = plt.gca()
 
         sns.heatmap(
@@ -649,12 +705,13 @@ for c in Ωc:
             vmin=0,
             vmax=1,
             linewidths=0.5,
-            cbar_kws={'label': 'State of Charge (SoC)'},
+            cbar_kws={'label': 'State of Charge (SoC)', 'shrink': 0.6, 'aspect': 30},  # Reduzindo tamanho e largura
             annot=df_annotations.T,
             fmt="",
-            annot_kws={'size': 5, 'rotation': 0},  # Fonte menor e rotação
+            annot_kws={'size': 5, 'rotation': 0},
             ax=ax
         )
+
 
         ax.set_title(f"EV & BESS SoC | Connection Status - Contingency {c} Scenario {s}", fontsize=14, fontweight='bold')
         ax.set_xlabel("Timestamp", fontsize=12)
@@ -666,6 +723,7 @@ for c in Ωc:
         ax.set_xticks(tick_positions)
         ax.set_xticklabels(tick_labels, rotation=45, ha='right')  # Rotaciona para melhor leitura
 
-        plt.tight_layout()
-        plt.savefig(f"Results/SoC_and_alphaEV_Heatmap_c{safe_c}_s{safe_s}.pdf", dpi=300)
+        plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.15)  # Ajuste das margens
+        plt.gcf().set_constrained_layout(True)
+        plt.savefig(f"Results/Contingency_{safe_c}_Scenario_{safe_s}_SoC_Heatmap.pdf", dpi=300, bbox_inches='tight', pad_inches=0)
         plt.close()

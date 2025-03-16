@@ -10,6 +10,8 @@ if os.path.exists(font_path):
     font_manager.fontManager.addfont(font_path)
     prop = font_manager.FontProperties(fname=font_path)
     plt.rcParams['font.family'] = prop.get_name()
+    plt.rcParams['axes.unicode_minus'] = False
+
 else:
     print("Fonte 'Gulliver.otf' não encontrada, usando Times New Roman.")
     plt.rcParams['font.family'] = 'Times New Roman'
