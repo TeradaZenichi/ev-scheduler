@@ -2,6 +2,8 @@
 
 This project implements a multi-objective optimization model based on MILP (Mixed-Integer Linear Programming) for the sizing of microgrids integrating renewable and non-renewable Distributed Energy Resources (DERs), Battery Energy Storage Systems (BESS), Thermal Generators (TG), Electric Vehicle Charging Stations (EVCS), and Vehicle-to-Grid (V2G) strategies.
 
+Please check the original paper on: <https://doi.org/10.1016/j.segan.2025.101773>
+
 ## Overview
 
 The proposed model focuses on three main objectives:
